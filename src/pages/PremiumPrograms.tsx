@@ -105,7 +105,7 @@ const PremiumPrograms = () => {
             </div>
             <h2 className="text-xl font-bold text-foreground">Premium Access Required</h2>
             <p className="text-sm text-muted-foreground">
-              This program is available only for premium members. Contact support to upgrade your account.
+              Secure manual verification. Premium access will be activated after payment confirmation.
             </p>
             <div className="flex flex-col sm:flex-row gap-3 pt-2">
               <button
@@ -115,10 +115,12 @@ const PremiumPrograms = () => {
                 Close
               </button>
               <a
-                href="mailto:support@bugspace.com?subject=Premium Subscription"
+                href={`https://wa.me/919363277862?text=${encodeURIComponent(`Hello, I would like to upgrade to BugSpace Premium.\nMy registered email is: ${firebaseUser?.email ?? "(not logged in)"}\nPlease share the payment details.`)}`}
+                target="_blank"
+                rel="noopener noreferrer"
                 className="flex-1 rounded-md bg-amber-500 px-4 py-2 text-sm font-medium text-white hover:bg-amber-600 transition-colors"
               >
-                Contact Support
+                Upgrade via WhatsApp
               </a>
             </div>
           </div>

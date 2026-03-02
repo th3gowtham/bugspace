@@ -172,6 +172,27 @@ service cloud.firestore {
     }
     
     // ============================================
+    // BOUNTIES COLLECTION - Per-user reward tracking
+    // Structure: bounties/{uid}/entries/{entryId}
+    // ============================================
+    match /bounties/{uid}/entries/{entryId} {
+      // Only the owner can read their own entries
+      allow read: if isOwner(uid);
+
+      // Owner can create entries under their own uid
+      allow create: if isOwner(uid)
+        && request.resource.data.uid == request.auth.uid;
+
+      // Owner can update their own entries
+      allow update: if isOwner(uid)
+        && resource.data.uid == request.auth.uid;
+
+      // Owner can delete their own entries
+      allow delete: if isOwner(uid)
+        && resource.data.uid == request.auth.uid;
+    }
+
+    // ============================================
     // DEFAULT - Deny all other access
     // ============================================
     match /{document=**} {

@@ -181,6 +181,6 @@ export function getRedirectPath(role: UserRole): string {
   switch (role) {
     case "admin":    return "/admin";
     case "employer": return "/employer";
-    default:         return "/browse";
+    default:         return "/dashboard";
   }
 }

@@ -13,6 +13,7 @@ import Login from "./pages/Login";
 import Register from "./pages/Register";
 import ForgotPassword from "./pages/ForgotPassword";
 import Dashboard from "./pages/Dashboard";
+import BountyTracker from "./pages/BountyTracker";
 import EmployerDashboard from "./pages/EmployerDashboard";
 import AdminPanel from "./pages/AdminPanel";
 import NotFound from "./pages/NotFound";
@@ -53,7 +54,14 @@ const App = () => (
                   <Dashboard />
                 </ProtectedRoute>
               } />
-              
+
+              {/* Bounty Tracker - researcher reward tracking */}
+              <Route path="/bounty-tracker" element={
+                <ProtectedRoute allowedRoles={["user"]}>
+                  <BountyTracker />
+                </ProtectedRoute>
+              } />
+
               {/* Employer routes - require employer role */}
               <Route path="/employer" element={
                 <ProtectedRoute allowedRoles={["employer"]}>

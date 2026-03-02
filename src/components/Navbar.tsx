@@ -73,6 +73,17 @@ export function Navbar() {
               Dashboard
             </Link>
           )}
+          {user && role === "user" && (
+            <Link
+              to="/bounty-tracker"
+              className={cn(
+                "text-sm font-medium transition-colors hover:text-foreground",
+                location.pathname === "/bounty-tracker" ? "text-foreground" : "text-muted-foreground"
+              )}
+            >
+              Bounty Tracker
+            </Link>
+          )}
         </nav>
 
         <div className="hidden md:flex items-center gap-3">
@@ -166,6 +177,15 @@ export function Navbar() {
               className="block text-sm font-medium text-muted-foreground hover:text-foreground"
             >
               Dashboard
+            </Link>
+          )}
+          {user && role === "user" && (
+            <Link
+              to="/bounty-tracker"
+              onClick={() => setMobileOpen(false)}
+              className="block text-sm font-medium text-muted-foreground hover:text-foreground"
+            >
+              Bounty Tracker
             </Link>
           )}
           <div className="pt-3 border-t border-border space-y-2">

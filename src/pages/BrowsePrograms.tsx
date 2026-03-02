@@ -224,21 +224,23 @@ const BrowsePrograms = () => {
             </div>
             <h2 className="text-xl font-bold text-foreground">Premium Program Access Required</h2>
             <p className="text-sm text-muted-foreground">
-              This program is available only for premium members. Upgrade your account to access exclusive bug bounty programs.
+              Secure manual verification. Premium access will be activated after payment confirmation.
             </p>
             <div className="flex flex-col sm:flex-row gap-3 pt-2">
-              <a
-                href="mailto:support@bugspace.io?subject=Premium Subscription"
-                className="flex-1 rounded-md border border-border px-4 py-2 text-sm font-medium text-foreground hover:bg-secondary transition-colors"
-              >
-                Contact Support
-              </a>
               <button
                 onClick={() => setLockedProgramId(null)}
-                className="flex-1 rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90 transition-colors"
+                className="flex-1 rounded-md border border-border px-4 py-2 text-sm font-medium text-foreground hover:bg-secondary transition-colors"
               >
                 Close
               </button>
+              <a
+                href={`https://wa.me/919363277862?text=${encodeURIComponent(`Hello, I would like to upgrade to BugSpace Premium.\nMy registered email is: ${firebaseUser?.email ?? "(not logged in)"}\nPlease share the payment details.`)}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex-1 rounded-md bg-amber-500 px-4 py-2 text-sm font-medium text-white hover:bg-amber-600 transition-colors"
+              >
+                Upgrade via WhatsApp
+              </a>
             </div>
           </div>
         </div>
