@@ -1,0 +1,181 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // ============================================
+    // HELPER FUNCTIONS
+    // ============================================
+    
+    // Check if user is authenticated
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    // Check if user is accessing their own document
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+    
+    // Check if user is an admin (document exists in admins collection)
+    function isAdmin() {
+      return isAuthenticated() && 
+        exists(/databases/$(database)/documents/admins/$(request.auth.uid));
+    }
+    
+    // Check if user is an employer (document exists in employers collection)
+    function isEmployer() {
+      return isAuthenticated() && 
+        exists(/databases/$(database)/documents/employers/$(request.auth.uid));
+    }
+    
+    // Safe fields that users can update on their own profile
+    function isSafeUserUpdate() {
+      return request.resource.data.diff(resource.data).affectedKeys()
+        .hasOnly(['fullName', 'updatedAt']);
+    }
+
+    // ============================================
+    // USERS COLLECTION - Auto-created on signup
+    // ============================================
+    match /users/{userId} {
+      // Users can read their own document
+      // Admins can read any user document
+      allow read: if isOwner(userId) || isAdmin();
+      
+      // Users can create their own document on signup
+      // Must match authenticated user's uid and have required fields
+      allow create: if isOwner(userId) 
+        && request.resource.data.uid == request.auth.uid
+        && 'email' in request.resource.data
+        && 'fullName' in request.resource.data;
+      
+      // Users can update only safe fields on their own document
+      // No deletion from client
+      allow update: if isOwner(userId) && isSafeUserUpdate();
+      
+      // No deletion from client
+      allow delete: if false;
+    }
+    
+    // ============================================
+    // ADMINS COLLECTION - Manual only
+    // ============================================
+    match /admins/{adminId} {
+      // Authenticated users can read admin collection (for role detection by email)
+      allow read: if isAuthenticated();
+      
+      // NO client-side writes allowed
+      // Admins are added manually via Firebase Console or Admin SDK
+      allow create, update, delete: if false;
+    }
+    
+    // ============================================
+    // EMPLOYERS COLLECTION - Manual only
+    // ============================================
+    match /employers/{employerId} {
+      // Authenticated users can read employer collection (for role detection by email)
+      allow read: if isAuthenticated();
+      
+      // NO client-side writes allowed
+      // Employers are added manually via Firebase Console or Admin SDK
+      allow create, update, delete: if false;
+    }
+    
+    // ============================================
+    // PREMIUM USERS COLLECTION
+    // ============================================
+    match /premiumUsers/{userId} {
+      // Users can read their own premium document to check access
+      allow read: if isOwner(userId) || isAdmin();
+
+      // Only admins can create, update, or delete premium access records
+      allow create, update, delete: if isAdmin();
+    }
+
+    // ============================================
+    // PROGRAMS COLLECTION - For bug bounty programs
+    // ============================================
+    match /programs/{programId} {
+      // Any authenticated user can read programs
+      allow read: if isAuthenticated();
+      
+      // Authenticated user can create a program; employer check is enforced
+      // on the frontend (employers stored by email, not uid, so exists() cannot
+      // be used here). createdBy must equal the caller's UID.
+      allow create: if isAuthenticated()
+        && request.resource.data.createdBy == request.auth.uid;
+      
+      // Only the original creator can update their own program
+      allow update: if isAuthenticated()
+        && resource.data.createdBy == request.auth.uid;
+      
+      // Only the original creator can delete their own program
+      allow delete: if isAuthenticated()
+        && resource.data.createdBy == request.auth.uid;
+    }
+    
+    // ============================================
+    // PREMIUM USERS COLLECTION
+    // ============================================
+    match /premiumUsers/{userId} {
+      // Users can read their own premium document to check access
+      allow read: if isOwner(userId) || isAdmin();
+
+      // Only admins can create, update, or delete premium access records
+      allow create, update, delete: if isAdmin();
+    }
+
+    // ============================================
+    // BOOKMARKS COLLECTION
+    // ============================================
+    match /bookmarks/{bookmarkId} {
+      // Users can only read their own bookmarks
+      allow read: if isAuthenticated()
+        && resource.data.userId == request.auth.uid;
+      
+      // Users can create bookmarks for themselves only
+      allow create: if isAuthenticated()
+        && request.resource.data.userId == request.auth.uid;
+      
+      // Users can delete only their own bookmarks
+      allow delete: if isAuthenticated()
+        && resource.data.userId == request.auth.uid;
+      
+      // No client-side updates
+      allow update: if false;
+    }
+
+    // ============================================
+    // REPORTS COLLECTION - Bug reports
+    // ============================================
+    match /reports/{reportId} {
+      // Users can read their own reports
+      // Employers can read reports for their programs
+      // Admins can read all reports
+      allow read: if isOwner(resource.data.researcherId) 
+        || (isEmployer() && resource.data.programOwnerId == request.auth.uid)
+        || isAdmin();
+      
+      // Authenticated users can create reports
+      allow create: if isAuthenticated() 
+        && request.resource.data.researcherId == request.auth.uid;
+      
+      // Researchers can update their own reports (limited fields)
+      // Employers can update reports for their programs (status only)
+      // Admins can update any report
+      allow update: if isOwner(resource.data.researcherId)
+        || (isEmployer() && resource.data.programOwnerId == request.auth.uid)
+        || isAdmin();
+      
+      // Only admin can delete reports
+      allow delete: if isAdmin();
+    }
+    
+    // ============================================
+    // DEFAULT - Deny all other access
+    // ============================================
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
