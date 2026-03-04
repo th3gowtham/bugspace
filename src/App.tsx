@@ -14,6 +14,7 @@ import Register from "./pages/Register";
 import ForgotPassword from "./pages/ForgotPassword";
 import Dashboard from "./pages/Dashboard";
 import BountyTracker from "./pages/BountyTracker";
+import ExclusiveBugs from "./pages/ExclusiveBugs";
 import EmployerDashboard from "./pages/EmployerDashboard";
 import AdminPanel from "./pages/AdminPanel";
 import NotFound from "./pages/NotFound";
@@ -59,6 +60,13 @@ const App = () => (
               <Route path="/bounty-tracker" element={
                 <ProtectedRoute allowedRoles={["user"]}>
                   <BountyTracker />
+                </ProtectedRoute>
+              } />
+
+              {/* Exclusive Bugs - premium vulnerability insights */}
+              <Route path="/exclusive-bugs" element={
+                <ProtectedRoute allowedRoles={["user"]}>
+                  <ExclusiveBugs />
                 </ProtectedRoute>
               } />
 

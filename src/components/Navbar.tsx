@@ -77,11 +77,24 @@ export function Navbar() {
             <Link
               to="/bounty-tracker"
               className={cn(
-                "text-sm font-medium transition-colors hover:text-foreground",
+                "text-sm font-medium transition-colors hover:text-foreground flex items-center gap-1",
                 location.pathname === "/bounty-tracker" ? "text-foreground" : "text-muted-foreground"
               )}
             >
+              <span className="text-amber-500">★</span>
               Bounty Tracker
+            </Link>
+          )}
+          {user && role === "user" && (
+            <Link
+              to="/exclusive-bugs"
+              className={cn(
+                "text-sm font-medium transition-colors hover:text-foreground flex items-center gap-1",
+                location.pathname === "/exclusive-bugs" ? "text-foreground" : "text-muted-foreground"
+              )}
+            >
+              <span className="text-amber-500">★</span>
+              Exclusive Bugs
             </Link>
           )}
         </nav>
@@ -170,6 +183,14 @@ export function Navbar() {
           >
             Browse Programs
           </Link>
+          <Link
+            to="/premium"
+            onClick={() => setMobileOpen(false)}
+            className="flex items-center gap-1 text-sm font-medium text-muted-foreground hover:text-foreground"
+          >
+            <span className="text-amber-500">★</span>
+            Premium
+          </Link>
           {user && (
             <Link
               to={getDashboardLink()}
@@ -183,9 +204,20 @@ export function Navbar() {
             <Link
               to="/bounty-tracker"
               onClick={() => setMobileOpen(false)}
-              className="block text-sm font-medium text-muted-foreground hover:text-foreground"
+              className="flex items-center gap-1 text-sm font-medium text-muted-foreground hover:text-foreground"
             >
+              <span className="text-amber-500">★</span>
               Bounty Tracker
+            </Link>
+          )}
+          {user && role === "user" && (
+            <Link
+              to="/exclusive-bugs"
+              onClick={() => setMobileOpen(false)}
+              className="flex items-center gap-1 text-sm font-medium text-muted-foreground hover:text-foreground"
+            >
+              <span className="text-amber-500">★</span>
+              Exclusive Bugs
             </Link>
           )}
           <div className="pt-3 border-t border-border space-y-2">

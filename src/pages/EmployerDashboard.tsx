@@ -1,8 +1,8 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
 import { StatusBadge } from "@/components/Badges";
-import { Plus, FileText, Edit3, ClipboardList, Star, Trash2, Search } from "lucide-react";
+import { Plus, FileText, Edit3, ClipboardList, Star, Trash2, Search, Bug, Tag, ChevronDown, X, PlusCircle } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import {
   addProgram,
@@ -12,12 +12,40 @@ import {
   updateProgram,
   deleteProgram,
 } from "@/lib/programService";
+import {
+  fetchEmployerBugs,
+  fetchCategories,
+  addExclusiveBug,
+  updateExclusiveBug,
+  deleteExclusiveBug,
+  addCategory,
+  deleteCategory,
+  type ExclusiveBug,
+  type ExclusiveBugInput,
+  type ExclusiveBugCategory,
+  type BugCurrency,
+} from "@/lib/exclusiveBugService";
 import type { ProgramData } from "@/components/ProgramCard";
 import { toast } from "sonner";
 
 const steps = ["Program Info", "Scope & Rules", "Preview"];
 
 // ─── Empty form state ─────────────────────────────────────────────────────────
+// ─── Exclusive Bugs helpers ──────────────────────────────────────────────────
+
+const BUG_CURRENCIES: BugCurrency[] = ["USD", "INR", "EUR", "GBP", "AUD"];
+
+function blankBugForm(): ExclusiveBugInput {
+  return {
+    title: "", summary: "", stepsToReproduce: "",
+    pocLink: "", referenceLink: "",
+    bountyAmount: 0, currency: "USD",
+    categoryId: "", categoryName: "",
+  };
+}
+
+// ─── Empty program form state ─────────────────────────────────────────────────
+
 const EMPTY_FORM = {
   programName: "",
   companyName: "",
@@ -34,6 +62,24 @@ const EmployerDashboard = () => {
   const { firebaseUser } = useAuth();
 
   const [activeTab, setActiveTab] = useState("programs");
+
+  // ── Exclusive Bugs state ────────────────────────────────────────────────────
+  const [myBugs,          setMyBugs]          = useState<ExclusiveBug[]>([]);
+  const [categories,      setCategories]      = useState<ExclusiveBugCategory[]>([]);
+  const [bugsLoading,     setBugsLoading]     = useState(false);
+  const [bugForm,         setBugForm]         = useState<ExclusiveBugInput>(blankBugForm());
+  const [editingBug,      setEditingBug]      = useState<ExclusiveBug | null>(null);
+  const [showBugModal,    setShowBugModal]    = useState(false);
+  const [bugSubmitting,   setBugSubmitting]   = useState(false);
+  const [deleteBugTarget, setDeleteBugTarget] = useState<ExclusiveBug | null>(null);
+  const [bugSearch,       setBugSearch]       = useState("");
+  const [filterBugCat,    setFilterBugCat]    = useState("");
+  const [newCatName,      setNewCatName]      = useState("");
+  const [addingCat,       setAddingCat]       = useState(false);
+  const [catSubmitting,   setCatSubmitting]   = useState(false);
+  const [showCatManager,  setShowCatManager]  = useState(false);
+  const [categorySearch,  setCategorySearch]  = useState("");
+  const [catDropdownOpen, setCatDropdownOpen] = useState(false);
   const [formStep, setFormStep] = useState(0);
   const [editingProgram, setEditingProgram] = useState<string | null>(null);   // display name
   const [editingProgramId, setEditingProgramId] = useState<string | null>(null); // Firestore doc ID
@@ -67,6 +113,123 @@ const EmployerDashboard = () => {
       .catch(() => toast.error("Failed to load your programs."))
       .finally(() => setProgramsLoading(false));
   }, [firebaseUser, submitted]);
+
+  // ── Load exclusive bugs + categories ─────────────────────────────────────
+  const loadBugsData = useCallback(async () => {
+    if (!firebaseUser) return;
+    setBugsLoading(true);
+    try {
+      const [bugData, catData] = await Promise.all([
+        fetchEmployerBugs(firebaseUser.uid),
+        fetchCategories(),
+      ]);
+      setMyBugs(bugData);
+      setCategories(catData);
+    } catch {
+      toast.error("Failed to load exclusive bugs.");
+    } finally {
+      setBugsLoading(false);
+    }
+  }, [firebaseUser]);
+
+  useEffect(() => {
+    if (activeTab === "exclusive-bugs") loadBugsData();
+  }, [activeTab, loadBugsData]);
+
+  // ── Exclusive bug handlers ────────────────────────────────────────────────
+  function openAddBug() {
+    setEditingBug(null);
+    setBugForm(blankBugForm());
+    setShowBugModal(true);
+  }
+
+  function openEditBug(bug: ExclusiveBug) {
+    setEditingBug(bug);
+    setBugForm({
+      title: bug.title, summary: bug.summary,
+      stepsToReproduce: bug.stepsToReproduce,
+      pocLink: bug.pocLink, referenceLink: bug.referenceLink,
+      bountyAmount: bug.bountyAmount, currency: bug.currency,
+      categoryId: bug.categoryId, categoryName: bug.categoryName,
+    });
+    setShowBugModal(true);
+  }
+
+  async function handleBugSubmit(ev: React.FormEvent) {
+    ev.preventDefault();
+    if (!firebaseUser) return;
+    if (!bugForm.title.trim() || !bugForm.summary.trim()) {
+      toast.error("Title and summary are required."); return;
+    }
+    if (!bugForm.categoryId) {
+      toast.error("Please select a category."); return;
+    }
+    setBugSubmitting(true);
+    try {
+      if (editingBug) {
+        await updateExclusiveBug(editingBug.bugId, bugForm);
+        toast.success("Bug updated.");
+      } else {
+        await addExclusiveBug(bugForm, firebaseUser.uid);
+        toast.success("Bug published.");
+      }
+      setShowBugModal(false);
+      setEditingBug(null);
+      await loadBugsData();
+    } catch {
+      toast.error("Failed to save bug.");
+    } finally {
+      setBugSubmitting(false);
+    }
+  }
+
+  async function handleDeleteBug() {
+    if (!deleteBugTarget) return;
+    try {
+      await deleteExclusiveBug(deleteBugTarget.bugId);
+      toast.success("Bug deleted.");
+      setDeleteBugTarget(null);
+      await loadBugsData();
+    } catch {
+      toast.error("Failed to delete bug.");
+    }
+  }
+
+  async function handleAddCategory() {
+    if (!newCatName.trim()) return;
+    setCatSubmitting(true);
+    try {
+      const cat = await addCategory(newCatName);
+      setCategories((prev) => [...prev, cat].sort((a, b) => a.name.localeCompare(b.name)));
+      setNewCatName("");
+      setAddingCat(false);
+      toast.success("Category created.");
+    } catch {
+      toast.error("Failed to create category.");
+    } finally {
+      setCatSubmitting(false);
+    }
+  }
+
+  async function handleDeleteCategory(cat: ExclusiveBugCategory) {
+    try {
+      await deleteCategory(cat.categoryId);
+      setCategories((prev) => prev.filter((c) => c.categoryId !== cat.categoryId));
+      toast.success("Category deleted.");
+    } catch {
+      toast.error("Failed to delete category.");
+    }
+  }
+
+  // filtered bugs
+  const filteredBugs = myBugs.filter((b) => {
+    if (filterBugCat && b.categoryId !== filterBugCat) return false;
+    if (bugSearch.trim()) {
+      const q = bugSearch.toLowerCase();
+      return b.title.toLowerCase().includes(q) || b.summary.toLowerCase().includes(q);
+    }
+    return true;
+  });
 
   const handleEdit = async (progId: string, progName: string) => {
     setEditingProgram(progName);
@@ -190,8 +353,9 @@ const EmployerDashboard = () => {
   };
 
   const sidebarItems = [
-    { id: "programs", label: "My Programs", icon: FileText },
-    { id: "add", label: "Add Program", icon: Plus },
+    { id: "programs",      label: "My Programs",          icon: FileText },
+    { id: "add",           label: "Add Program",           icon: Plus },
+    { id: "exclusive-bugs", label: "Exclusive Bugs Manager", icon: Bug },
   ];
 
   return (
@@ -334,6 +498,178 @@ const EmployerDashboard = () => {
                       Add Program
                     </button>
                   </p>
+                </div>
+              </div>
+            )}
+
+            {activeTab === "exclusive-bugs" && (
+              <div className="space-y-5">
+                {/* Header */}
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                  <h2 className="text-lg font-semibold text-foreground">Exclusive Bugs Manager</h2>
+                  <div className="flex gap-2 flex-wrap">
+                    <button
+                      onClick={() => setShowCatManager((v) => !v)}
+                      className="flex items-center gap-1.5 rounded-md border border-border px-3 py-2 text-sm font-medium text-muted-foreground hover:bg-secondary hover:text-foreground transition-colors"
+                    >
+                      <Tag className="h-4 w-4" />
+                      Manage Categories
+                    </button>
+                    <button
+                      onClick={openAddBug}
+                      className="flex items-center gap-1.5 rounded-md bg-primary px-3 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90 transition-colors"
+                    >
+                      <PlusCircle className="h-4 w-4" />
+                      Create Bug
+                    </button>
+                  </div>
+                </div>
+
+                {/* Category manager panel */}
+                {showCatManager && (
+                  <div className="glass-card p-4 space-y-3">
+                    <div className="flex items-center justify-between">
+                      <p className="text-sm font-medium text-foreground">Categories</p>
+                      <button
+                        onClick={() => setAddingCat((v) => !v)}
+                        className="flex items-center gap-1 text-xs text-primary hover:underline"
+                      >
+                        <Plus className="h-3.5 w-3.5" />
+                        Add New
+                      </button>
+                    </div>
+                    {addingCat && (
+                      <div className="flex gap-2">
+                        <input
+                          type="text"
+                          value={newCatName}
+                          onChange={(e) => setNewCatName(e.target.value)}
+                          placeholder="Category name"
+                          className="flex-1 rounded-md border border-input bg-background px-3 py-1.5 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+                          onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); handleAddCategory(); } }}
+                        />
+                        <button
+                          onClick={handleAddCategory}
+                          disabled={catSubmitting || !newCatName.trim()}
+                          className="rounded-md bg-primary px-3 py-1.5 text-sm font-medium text-primary-foreground disabled:opacity-60"
+                        >
+                          {catSubmitting ? "…" : "Create"}
+                        </button>
+                        <button onClick={() => { setAddingCat(false); setNewCatName(""); }} className="text-muted-foreground hover:text-foreground">
+                          <X className="h-4 w-4" />
+                        </button>
+                      </div>
+                    )}
+                    {categories.length === 0 ? (
+                      <p className="text-xs text-muted-foreground">No categories yet.</p>
+                    ) : (
+                      <div className="flex flex-wrap gap-2">
+                        {categories.map((cat) => (
+                          <div key={cat.categoryId} className="flex items-center gap-1.5 rounded-full border border-border bg-secondary/40 px-3 py-1 text-xs">
+                            <span className="text-foreground">{cat.name}</span>
+                            <button
+                              onClick={() => handleDeleteCategory(cat)}
+                              className="text-muted-foreground hover:text-destructive transition-colors"
+                              title="Delete category"
+                            >
+                              <X className="h-3 w-3" />
+                            </button>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {/* Filters */}
+                <div className="flex flex-wrap gap-3">
+                  <div className="relative flex-1 min-w-[160px]">
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
+                    <input
+                      type="text"
+                      placeholder="Search bugs…"
+                      value={bugSearch}
+                      onChange={(e) => setBugSearch(e.target.value)}
+                      className="w-full rounded-md border border-input bg-background py-2 pl-9 pr-4 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+                    />
+                  </div>
+                  <div className="relative min-w-[150px]">
+                    <select
+                      value={filterBugCat}
+                      onChange={(e) => setFilterBugCat(e.target.value)}
+                      className="appearance-none w-full rounded-md border border-input bg-background px-3 pr-8 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+                    >
+                      <option value="">All categories</option>
+                      {categories.map((c) => (
+                        <option key={c.categoryId} value={c.categoryId}>{c.name}</option>
+                      ))}
+                    </select>
+                    <ChevronDown className="pointer-events-none absolute right-2 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
+                  </div>
+                </div>
+
+                {/* Table */}
+                <div className="glass-card overflow-hidden">
+                  {bugsLoading ? (
+                    <div className="py-12 text-center text-sm text-muted-foreground">Loading…</div>
+                  ) : filteredBugs.length === 0 ? (
+                    <div className="py-12 text-center">
+                      <Bug className="h-10 w-10 text-muted-foreground/40 mx-auto mb-3" />
+                      <p className="text-sm text-muted-foreground">
+                        {myBugs.length === 0 ? "No bugs published yet. Create your first one!" : "No bugs match your filters."}
+                      </p>
+                    </div>
+                  ) : (
+                    <div className="overflow-x-auto">
+                      <table className="w-full text-sm">
+                        <thead>
+                          <tr className="border-b border-border bg-secondary/40">
+                            <th className="px-5 py-3 text-xs font-medium text-muted-foreground text-left">Bug Title</th>
+                            <th className="px-4 py-3 text-xs font-medium text-muted-foreground text-left">Category</th>
+                            <th className="px-4 py-3 text-xs font-medium text-muted-foreground text-right">Bounty</th>
+                            <th className="px-4 py-3 text-xs font-medium text-muted-foreground text-left">Created</th>
+                            <th className="px-4 py-3 text-xs font-medium text-muted-foreground text-left">Actions</th>
+                          </tr>
+                        </thead>
+                        <tbody className="divide-y divide-border">
+                          {filteredBugs.map((bug) => (
+                            <tr key={bug.bugId} className="hover:bg-secondary/30 transition-colors">
+                              <td className="px-5 py-3.5">
+                                <p className="font-medium text-foreground truncate max-w-[220px]" title={bug.title}>{bug.title}</p>
+                              </td>
+                              <td className="px-4 py-3.5">
+                                <span className="inline-flex items-center rounded-full border border-primary/30 bg-primary/10 px-2 py-0.5 text-xs font-medium text-primary">
+                                  {bug.categoryName}
+                                </span>
+                              </td>
+                              <td className="px-4 py-3.5 text-right font-semibold text-green-400 text-xs">
+                                {bug.currency} {bug.bountyAmount.toLocaleString()}
+                              </td>
+                              <td className="px-4 py-3.5 text-muted-foreground text-xs">{bug.createdAt.toLocaleDateString()}</td>
+                              <td className="px-4 py-3.5">
+                                <div className="flex items-center gap-1">
+                                  <button
+                                    onClick={() => openEditBug(bug)}
+                                    className="p-1.5 rounded-md text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors"
+                                    title="Edit"
+                                  >
+                                    <Edit3 className="h-3.5 w-3.5" />
+                                  </button>
+                                  <button
+                                    onClick={() => setDeleteBugTarget(bug)}
+                                    className="p-1.5 rounded-md text-muted-foreground hover:text-red-400 hover:bg-red-500/10 transition-colors"
+                                    title="Delete"
+                                  >
+                                    <Trash2 className="h-3.5 w-3.5" />
+                                  </button>
+                                </div>
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  )}
                 </div>
               </div>
             )}
@@ -545,6 +881,191 @@ const EmployerDashboard = () => {
         </div>
       </div>
       <Footer />
+
+      {/* ── Create / Edit Bug Modal ───────────────────────────────────────── */}
+      {showBugModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+          <div className="w-full max-w-lg rounded-xl border border-border bg-card shadow-2xl overflow-y-auto max-h-[90vh]">
+            <div className="flex items-center justify-between px-6 py-4 border-b border-border">
+              <h2 className="text-base font-semibold text-foreground">
+                {editingBug ? "Edit Exclusive Bug" : "Create Exclusive Bug"}
+              </h2>
+              <button onClick={() => { setShowBugModal(false); setEditingBug(null); }} className="p-1 rounded-md text-muted-foreground hover:text-foreground">
+                <X className="h-4 w-4" />
+              </button>
+            </div>
+            <form onSubmit={handleBugSubmit} className="px-6 py-5 space-y-4">
+              {/* Title */}
+              <div>
+                <label className="block text-xs font-medium text-foreground mb-1">Bug Title *</label>
+                <input required value={bugForm.title} onChange={(e) => setBugForm((p) => ({ ...p, title: e.target.value }))}
+                  placeholder="e.g. Stored XSS via profile bio"
+                  className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring" />
+              </div>
+              {/* Summary */}
+              <div>
+                <label className="block text-xs font-medium text-foreground mb-1">Summary *</label>
+                <textarea required rows={3} value={bugForm.summary} onChange={(e) => setBugForm((p) => ({ ...p, summary: e.target.value }))}
+                  placeholder="Brief description of the vulnerability…"
+                  className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring resize-none" />
+              </div>
+              {/* Steps to Reproduce */}
+              <div>
+                <label className="block text-xs font-medium text-foreground mb-1">Steps to Reproduce</label>
+                <textarea rows={4} value={bugForm.stepsToReproduce} onChange={(e) => setBugForm((p) => ({ ...p, stepsToReproduce: e.target.value }))}
+                  placeholder="1. Navigate to...&#10;2. Insert payload...&#10;3. Observe..."
+                  className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm text-foreground font-mono placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring resize-none" />
+              </div>
+              {/* PoC + Reference */}
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-xs font-medium text-foreground mb-1">PoC Link</label>
+                  <input type="url" value={bugForm.pocLink} onChange={(e) => setBugForm((p) => ({ ...p, pocLink: e.target.value }))}
+                    placeholder="https://..."
+                    className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring" />
+                </div>
+                <div>
+                  <label className="block text-xs font-medium text-foreground mb-1">Reference Blog Link</label>
+                  <input type="url" value={bugForm.referenceLink} onChange={(e) => setBugForm((p) => ({ ...p, referenceLink: e.target.value }))}
+                    placeholder="https://..."
+                    className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring" />
+                </div>
+              </div>
+              {/* Amount + Currency */}
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-xs font-medium text-foreground mb-1">Bounty Amount Earned</label>
+                  <input type="number" min={0} step={0.01}
+                    value={bugForm.bountyAmount || ""} onChange={(e) => setBugForm((p) => ({ ...p, bountyAmount: parseFloat(e.target.value) || 0 }))}
+                    placeholder="0.00"
+                    className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring" />
+                </div>
+                <div>
+                  <label className="block text-xs font-medium text-foreground mb-1">Currency</label>
+                  <div className="relative">
+                    <select value={bugForm.currency} onChange={(e) => setBugForm((p) => ({ ...p, currency: e.target.value as BugCurrency }))}
+                      className="appearance-none w-full rounded-md border border-input bg-background px-3 pr-8 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-ring">
+                      {BUG_CURRENCIES.map((c) => <option key={c} value={c}>{c}</option>)}
+                    </select>
+                    <ChevronDown className="pointer-events-none absolute right-2 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
+                  </div>
+                </div>
+              </div>
+              {/* Category selector */}
+              <div>
+                <label className="block text-xs font-medium text-foreground mb-1">Category *</label>
+                <div className="relative">
+                  <button
+                    type="button"
+                    onClick={() => setCatDropdownOpen((v) => !v)}
+                    className="w-full flex items-center justify-between rounded-md border border-input bg-background px-3 py-2 text-sm text-left focus:outline-none focus:ring-2 focus:ring-ring"
+                  >
+                    <span className={bugForm.categoryId ? "text-foreground" : "text-muted-foreground"}>
+                      {bugForm.categoryId ? bugForm.categoryName : "Select category…"}
+                    </span>
+                    <ChevronDown className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
+                  </button>
+                  {catDropdownOpen && (
+                    <>
+                      <div className="fixed inset-0 z-10" onClick={() => setCatDropdownOpen(false)} />
+                      <div className="absolute left-0 top-full mt-1 z-20 w-full rounded-md border border-border bg-card shadow-lg overflow-hidden">
+                        <div className="p-2 border-b border-border">
+                          <input
+                            autoFocus
+                            type="text"
+                            value={categorySearch}
+                            onChange={(e) => setCategorySearch(e.target.value)}
+                            placeholder="Search categories…"
+                            className="w-full rounded-md border border-input bg-background px-3 py-1.5 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+                          />
+                        </div>
+                        <div className="max-h-40 overflow-y-auto">
+                          {categories
+                            .filter((c) => c.name.toLowerCase().includes(categorySearch.toLowerCase()))
+                            .map((cat) => (
+                              <button
+                                key={cat.categoryId}
+                                type="button"
+                                onClick={() => { setBugForm((p) => ({ ...p, categoryId: cat.categoryId, categoryName: cat.name })); setCatDropdownOpen(false); setCategorySearch(""); }}
+                                className={`w-full text-left px-3 py-2 text-sm hover:bg-secondary transition-colors ${
+                                  bugForm.categoryId === cat.categoryId ? "font-medium text-primary" : "text-foreground"
+                                }`}
+                              >
+                                {cat.name}
+                              </button>
+                            ))}
+                          {categories.filter((c) => c.name.toLowerCase().includes(categorySearch.toLowerCase())).length === 0 && (
+                            <p className="px-3 py-2 text-sm text-muted-foreground">No categories match.</p>
+                          )}
+                        </div>
+                        <div className="border-t border-border p-2">
+                          <div className="flex gap-2">
+                            <input
+                              type="text"
+                              value={newCatName}
+                              onChange={(e) => setNewCatName(e.target.value)}
+                              placeholder="New category name"
+                              className="flex-1 rounded-md border border-input bg-background px-3 py-1.5 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+                              onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); handleAddCategory(); } }}
+                            />
+                            <button
+                              type="button"
+                              onClick={handleAddCategory}
+                              disabled={catSubmitting || !newCatName.trim()}
+                              className="rounded-md bg-primary px-2.5 py-1.5 text-xs font-medium text-primary-foreground disabled:opacity-60"
+                            >
+                              {catSubmitting ? "…" : "Add"}
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    </>
+                  )}
+                </div>
+              </div>
+              {/* Actions */}
+              <div className="flex justify-end gap-2 pt-1">
+                <button type="button" onClick={() => { setShowBugModal(false); setEditingBug(null); }}
+                  className="rounded-md border border-border px-4 py-2 text-sm font-medium text-muted-foreground hover:bg-secondary transition-colors">
+                  Cancel
+                </button>
+                <button type="submit" disabled={bugSubmitting}
+                  className="rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90 disabled:opacity-60 transition-colors">
+                  {bugSubmitting ? "Saving…" : editingBug ? "Update Bug" : "Publish Bug"}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* ── Delete Bug Confirm ────────────────────────────────────────────── */}
+      {deleteBugTarget && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+          <div className="w-full max-w-sm rounded-xl border border-border bg-card shadow-2xl p-6">
+            <div className="flex items-center gap-3 mb-4">
+              <div className="rounded-lg bg-red-500/10 p-2.5"><Trash2 className="h-5 w-5 text-red-400" /></div>
+              <div>
+                <h2 className="text-base font-semibold text-foreground">Delete Bug</h2>
+                <p className="text-xs text-muted-foreground">This cannot be undone.</p>
+              </div>
+            </div>
+            <p className="text-sm text-muted-foreground mb-5">
+              Delete <span className="font-medium text-foreground">{deleteBugTarget.title}</span>?
+            </p>
+            <div className="flex justify-end gap-2">
+              <button onClick={() => setDeleteBugTarget(null)}
+                className="rounded-md border border-border px-4 py-2 text-sm font-medium text-muted-foreground hover:bg-secondary transition-colors">
+                Cancel
+              </button>
+              <button onClick={handleDeleteBug}
+                className="rounded-md bg-red-500 px-4 py-2 text-sm font-medium text-white hover:bg-red-600 transition-colors">
+                Delete
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
