@@ -75,6 +75,17 @@ export function Navbar() {
           )}
           {user && role === "user" && (
             <Link
+              to="/notes"
+              className={cn(
+                "text-sm font-medium transition-colors hover:text-foreground",
+                location.pathname === "/notes" ? "text-foreground" : "text-muted-foreground"
+              )}
+            >
+              Notes
+            </Link>
+          )}
+          {user && role === "user" && (
+            <Link
               to="/bounty-tracker"
               className={cn(
                 "text-sm font-medium transition-colors hover:text-foreground flex items-center gap-1",
@@ -198,6 +209,15 @@ export function Navbar() {
               className="block text-sm font-medium text-muted-foreground hover:text-foreground"
             >
               Dashboard
+            </Link>
+          )}
+          {user && role === "user" && (
+            <Link
+              to="/notes"
+              onClick={() => setMobileOpen(false)}
+              className="block text-sm font-medium text-muted-foreground hover:text-foreground"
+            >
+              Notes
             </Link>
           )}
           {user && role === "user" && (

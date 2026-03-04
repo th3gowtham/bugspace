@@ -15,6 +15,7 @@ import ForgotPassword from "./pages/ForgotPassword";
 import Dashboard from "./pages/Dashboard";
 import BountyTracker from "./pages/BountyTracker";
 import ExclusiveBugs from "./pages/ExclusiveBugs";
+import ResearchNotes from "./pages/ResearchNotes";
 import EmployerDashboard from "./pages/EmployerDashboard";
 import AdminPanel from "./pages/AdminPanel";
 import NotFound from "./pages/NotFound";
@@ -67,6 +68,13 @@ const App = () => (
               <Route path="/exclusive-bugs" element={
                 <ProtectedRoute allowedRoles={["user"]}>
                   <ExclusiveBugs />
+                </ProtectedRoute>
+              } />
+
+              {/* Research Notes - free note-taking for researchers */}
+              <Route path="/notes" element={
+                <ProtectedRoute allowedRoles={["user"]}>
+                  <ResearchNotes />
                 </ProtectedRoute>
               } />
 

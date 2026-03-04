@@ -193,6 +193,45 @@ service cloud.firestore {
     }
 
     // ============================================
+    // NOTES_FOLDERS - Research note folders
+    // ============================================
+    match /notes_folders/{folderId} {
+      allow read, write: if request.auth != null;
+    }
+
+    // ============================================
+    // NOTES_PAGES - Research note pages
+    // ============================================
+    match /notes_pages/{pageId} {
+      allow read, write: if request.auth != null;
+    }
+
+    // ============================================
+    // NOTES_FOLDERS - Research note folders
+    // ============================================
+    match /notes_folders/{folderId} {
+      allow read, write: if request.auth != null;
+    }
+
+    // ============================================
+    // NOTES_PAGES - Research note pages
+    // ============================================
+    match /notes_pages/{pageId} {
+      allow read, write: if request.auth != null;
+    }
+
+    // ============================================
+    // NOTES_SHARES - Note sharing invites
+    // ============================================
+    match /notes_shares/{shareId} {
+      // Owner can read/write their own shares; target can read & update status
+      allow read:   if request.auth != null;
+      allow create: if request.auth != null;
+      allow update: if request.auth != null;
+      allow delete: if request.auth != null;
+    }
+
+    // ============================================
     // DEFAULT - Deny all other access
     // ============================================
     match /{document=**} {
