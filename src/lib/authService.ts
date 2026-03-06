@@ -11,6 +11,7 @@ import {
 import { doc, setDoc, getDoc, serverTimestamp, collection, query, where, getDocs } from "firebase/firestore";
 import { auth, db } from "./firebase";
 import { UserRole, UserData, AdminData, EmployerData } from "@/types/auth";
+import { generateReferralCode, processReferralOnSignup } from "./referralService";
 
 // Email verification settings
 const actionCodeSettings: ActionCodeSettings = {
@@ -88,6 +89,11 @@ export async function createUserDocument(
     createdAt:     serverTimestamp(),
     provider:      provider,
     emailVerified: user.emailVerified,
+    // Referral fields — populated by processReferralOnSignup
+    referralCode:  generateReferralCode(),
+    referralCount: 0,
+    referredBy:    null,
+    premiumUntil:  null,
   });
 }
 
@@ -99,10 +105,16 @@ export async function signUpWithEmail(
 ): Promise<{ success: boolean; error?: string }> {
   try {
     const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-    
+    const { user } = userCredential;
+
     // Create user document in users collection
-    await createUserDocument(userCredential.user, fullName, "password");
-    
+    await createUserDocument(user, fullName, "password");
+
+    // Process referral (reads code from localStorage, awards premium if tier reached)
+    if (user.email) {
+      await processReferralOnSignup(user.uid, user.email);
+    }
+
     return { success: true };
   } catch (error: any) {
     console.error("Signup error:", error);
@@ -133,7 +145,7 @@ export async function signInWithGoogle(): Promise<{ success: boolean; role?: Use
     // Detect role based on admin / employer collections
     const role = await detectUserRole(user.email);
 
-    // If new user, create document in users collection
+    // If new user, create document in users collection and process referral
     const userDoc = await getDoc(doc(db, "users", user.uid));
     if (!userDoc.exists()) {
       await createUserDocument(
@@ -141,6 +153,9 @@ export async function signInWithGoogle(): Promise<{ success: boolean; role?: Use
         user.displayName || "User",
         "google"
       );
+      if (user.email) {
+        await processReferralOnSignup(user.uid, user.email);
+      }
     }
 
     return { success: true, role };

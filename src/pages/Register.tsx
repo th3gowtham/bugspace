@@ -1,7 +1,8 @@
-﻿import { useState } from "react";
+﻿import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Shield, AlertCircle, Loader2 } from "lucide-react";
 import { signInWithGoogle, getRedirectPath } from "@/lib/authService";
+import { storeRefCodeFromUrl } from "@/lib/referralService";
 import { useAuth } from "@/contexts/AuthContext";
 
 const Register = () => {
@@ -9,6 +10,12 @@ const Register = () => {
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
   const { user, role } = useAuth();
+
+  // Capture ?ref= query param and persist to localStorage so it survives the
+  // OAuth redirect or any navigation before the signup completes.
+  useEffect(() => {
+    storeRefCodeFromUrl();
+  }, []);
 
   // Redirect if already logged in
   if (user) {

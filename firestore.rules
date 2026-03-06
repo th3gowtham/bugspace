@@ -34,6 +34,15 @@ service cloud.firestore {
         .hasOnly(['fullName', 'updatedAt']);
     }
 
+    // Fields that the referral system may update on any user document.
+    // NOTE: For production, move referral writes to a Cloud Function so these
+    // writes are fully server-authorised. Client-side referral updates are
+    // intentionally restricted to these fields only.
+    function isReferralUpdate() {
+      return request.resource.data.diff(resource.data).affectedKeys()
+        .hasOnly(['referralCode', 'referralCount', 'referredBy', 'premiumUntil']);
+    }
+
     // ============================================
     // USERS COLLECTION - Auto-created on signup
     // ============================================
@@ -49,9 +58,11 @@ service cloud.firestore {
         && 'email' in request.resource.data
         && 'fullName' in request.resource.data;
       
-      // Users can update only safe fields on their own document
-      // No deletion from client
-      allow update: if isOwner(userId) && isSafeUserUpdate();
+      // Users can update only safe fields on their own document.
+      // Any authenticated user can perform a pure referral-field update
+      // (incrementing referralCount, setting premiumUntil, etc.).
+      allow update: if (isOwner(userId) && isSafeUserUpdate())
+        || (isAuthenticated() && isReferralUpdate());
       
       // No deletion from client
       allow delete: if false;
@@ -232,7 +243,26 @@ service cloud.firestore {
     }
 
     // ============================================
-    // DEFAULT - Deny all other access
+    // REFERRALS COLLECTION - Referral records
+    // ============================================
+    match /referrals/{referralId} {
+      // Only the referrer or referred user can read the record. Admins can read all.
+      allow read: if isAdmin()
+        || (isAuthenticated() && (
+          resource.data.referrerUid == request.auth.uid
+          || resource.data.referredUid == request.auth.uid
+        ));
+
+      // Any authenticated user can create a referral record during signup.
+      // The service code enforces anti-abuse checks (no self-referral, no duplicate).
+      allow create: if isAuthenticated()
+        && request.resource.data.referredUid == request.auth.uid;
+
+      // No client-side updates or deletes once created
+      allow update, delete: if false;
+    }
+
+    // ============================================
     // ============================================
     match /{document=**} {
       allow read, write: if false;

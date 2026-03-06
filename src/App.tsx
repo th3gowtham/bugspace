@@ -48,6 +48,12 @@ const App = () => (
                   <Register />
                 </PublicOnlyRoute>
               } />
+              {/* /signup is the referral link entry point — same page as /register */}
+              <Route path="/signup" element={
+                <PublicOnlyRoute>
+                  <Register />
+                </PublicOnlyRoute>
+              } />
               <Route path="/forgot-password" element={<ForgotPassword />} />
               
               {/* Protected routes - require authentication */}

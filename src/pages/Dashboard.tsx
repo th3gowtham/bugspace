@@ -3,16 +3,18 @@ import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
 import { ProgramCard } from "@/components/ProgramCard";
 import type { ProgramData } from "@/components/ProgramCard";
-import { Bookmark, Bell, Settings, Inbox } from "lucide-react";
+import { ReferralDashboard } from "@/components/ReferralDashboard";
+import { Bookmark, Bell, Settings, Inbox, Users2 } from "lucide-react";
 import { useState, useEffect } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { fetchUserBookmarkPrograms } from "@/lib/bookmarkService";
 import { toast } from "sonner";
 
 const tabs = [
-  { id: "bookmarks", label: "Bookmarked", icon: Bookmark },
-  { id: "updates", label: "Recent Updates", icon: Bell },
-  { id: "settings", label: "Settings", icon: Settings },
+  { id: "bookmarks", label: "Bookmarked",  icon: Bookmark },
+  { id: "updates",   label: "Recent Updates", icon: Bell },
+  { id: "referrals", label: "Referrals",    icon: Users2 },
+  { id: "settings",  label: "Settings",     icon: Settings },
 ];
 
 const Dashboard = () => {
@@ -102,6 +104,8 @@ const Dashboard = () => {
                 description="Updates from your bookmarked programs will appear here."
               />
             )}
+
+            {activeTab === "referrals" && <ReferralDashboard />}
 
             {activeTab === "settings" && (
               <div className="glass-card p-6 max-w-md">

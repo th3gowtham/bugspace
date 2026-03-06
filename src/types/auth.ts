@@ -7,6 +7,11 @@ export interface UserData {
   createdAt: Date;
   provider: "password" | "google";
   emailVerified: boolean;
+  // Referral system
+  referralCode:  string;
+  referralCount: number;
+  referredBy:    string | null;
+  premiumUntil:  Date | null;
 }
 
 export interface AdminData {
