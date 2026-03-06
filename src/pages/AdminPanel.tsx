@@ -2,16 +2,18 @@
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
 import { StatusBadge } from "@/components/Badges";
-import { Shield, Users, BarChart3, Star, Trash2, MinusCircle, Search, DollarSign, TrendingUp } from "lucide-react";
+import { Shield, Users, BarChart3, Star, Trash2, MinusCircle, Search, DollarSign, TrendingUp, GitBranch } from "lucide-react";
 import { collection, getDocs, query, where, orderBy } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import {
   fetchAllPremiumUsers,
   fetchAllUsers,
+  fetchReferralPremiumUsers,
   assignPremiumUser,
   updatePremiumUser,
   removePremiumUser,
   type PremiumUserRecord,
+  type ReferralPremiumUser,
   type AppUser,
 } from "@/lib/premiumService";
 import { useAuth } from "@/contexts/AuthContext";
@@ -58,6 +60,20 @@ interface AdminUser {
 }
 
 // â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+function SourceBadge({ source }: { source: string }) {
+  const configs: Record<string, { label: string; classes: string }> = {
+    "admin-granted": { label: "Admin",    classes: "bg-blue-500/15 text-blue-400" },
+    "referral":      { label: "Referral", classes: "bg-emerald-500/15 text-emerald-400" },
+    "paid":          { label: "Paid",     classes: "bg-amber-500/15 text-amber-400" },
+  };
+  const cfg = configs[source] ?? { label: source, classes: "bg-secondary text-muted-foreground" };
+  return (
+    <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ${cfg.classes}`}>
+      {cfg.label}
+    </span>
+  );
+}
+
 const AdminPanel = () => {
   const { firebaseUser } = useAuth();
   const [activeTab, setActiveTab] = useState("programs");
@@ -83,14 +99,16 @@ const AdminPanel = () => {
   const [analyticsLoaded, setAnalyticsLoaded] = useState(false);
 
   // â”€â”€ premium tab â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-  const [premiumUsers,    setPremiumUsers]    = useState<PremiumUserRecord[]>([]);
-  const [premiumLoading,  setPremiumLoading]  = useState(false);
-  const [allUsers,        setAllUsers]        = useState<AppUser[]>([]);
-  const [userSearch,      setUserSearch]      = useState("");
-  const [duration,        setDuration]        = useState<"1m" | "2m" | "3m" | "custom">("1m");
-  const [customStart,     setCustomStart]     = useState("");
-  const [customEnd,       setCustomEnd]       = useState("");
-  const [assigning,       setAssigning]       = useState(false);
+  const [premiumUsers,          setPremiumUsers]          = useState<PremiumUserRecord[]>([]);
+  const [referralPremiumUsers,  setReferralPremiumUsers]  = useState<ReferralPremiumUser[]>([]);
+  const [premiumLoading,        setPremiumLoading]        = useState(false);
+  const [allUsers,              setAllUsers]              = useState<AppUser[]>([]);
+  const [userSearch,            setUserSearch]            = useState("");
+  const [duration,              setDuration]              = useState<"1m" | "2m" | "3m" | "custom">("1m");
+  const [customStart,           setCustomStart]           = useState("");
+  const [customEnd,             setCustomEnd]             = useState("");
+  const [assigning,             setAssigning]             = useState(false);
+  const [sourceFilter,          setSourceFilter]          = useState<"all" | "admin" | "referral">("all");
 
   // â”€â”€ load dashboard stats on mount â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   useEffect(() => {
@@ -170,8 +188,14 @@ const AdminPanel = () => {
   // â”€â”€ load premium tab â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   const loadPremiumUsers = () => {
     setPremiumLoading(true);
-    fetchAllPremiumUsers()
-      .then(setPremiumUsers)
+    Promise.all([
+      fetchAllPremiumUsers(),
+      fetchReferralPremiumUsers(),
+    ])
+      .then(([pu, rpu]) => {
+        setPremiumUsers(pu);
+        setReferralPremiumUsers(rpu);
+      })
       .catch(() => toast.error("Failed to load premium users."))
       .finally(() => setPremiumLoading(false));
   };
@@ -439,6 +463,7 @@ const AdminPanel = () => {
             {/* â”€â”€ Premium Users â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
             {activeTab === "premium" && (
               <div className="space-y-6">
+                {/* Assign premium form */}
                 <div className="glass-card p-6 space-y-4">
                   <h3 className="text-sm font-semibold text-foreground flex items-center gap-2">
                     <Star className="h-4 w-4 text-amber-500" />
@@ -488,7 +513,7 @@ const AdminPanel = () => {
                       <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                       <input
                         type="text"
-                        placeholder="Search by name or emailâ€¦"
+                        placeholder="Search by name or email…"
                         value={userSearch}
                         onChange={(e) => setUserSearch(e.target.value)}
                         className="w-full rounded-md border border-input bg-background py-2 pl-9 pr-4 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
@@ -511,7 +536,7 @@ const AdminPanel = () => {
                               disabled={assigning}
                               className="rounded-md bg-amber-500/15 px-3 py-1.5 text-xs font-medium text-amber-500 hover:bg-amber-500/25 transition-colors disabled:opacity-60"
                             >
-                              {assigning ? "Assigningâ€¦" : "Assign Premium"}
+                              {assigning ? "Assigning…" : "Assign Premium"}
                             </button>
                           </div>
                         ))
@@ -520,60 +545,131 @@ const AdminPanel = () => {
                   )}
                 </div>
 
-                <div className="glass-card overflow-hidden">
-                  <div className="px-4 py-3 border-b border-border">
-                    <h3 className="text-sm font-semibold text-foreground">Active Premium Users</h3>
-                  </div>
-                  {premiumLoading ? (
-                    <div className="py-8 text-center text-sm text-muted-foreground">Loadingâ€¦</div>
-                  ) : premiumUsers.length === 0 ? (
-                    <div className="py-8 text-center text-sm text-muted-foreground">No premium users yet.</div>
-                  ) : (
-                    <div className="overflow-x-auto">
-                      <table className="w-full text-sm">
-                        <thead>
-                          <tr className="border-b border-border">
-                            <th className="text-left py-3 px-4 font-medium text-muted-foreground">Email</th>
-                            <th className="text-left py-3 px-4 font-medium text-muted-foreground">Expires</th>
-                            <th className="text-left py-3 px-4 font-medium text-muted-foreground">Status</th>
-                            <th className="text-right py-3 px-4 font-medium text-muted-foreground">Actions</th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          {premiumUsers.map((pu) => (
-                            <tr key={pu.id} className="border-b border-border last:border-0 hover:bg-secondary/50 transition-colors">
-                              <td className="py-3 px-4 text-foreground">{pu.email}</td>
-                              <td className="py-3 px-4 text-muted-foreground">{pu.endDate.toLocaleDateString()}</td>
-                              <td className="py-3 px-4">
-                                <StatusBadge status={pu.isActive && pu.endDate >= new Date() ? "Active" : "Paused"} />
-                              </td>
-                              <td className="py-3 px-4">
-                                <div className="flex items-center justify-end gap-2">
-                                  {pu.isActive && (
-                                    <button
-                                      onClick={() => handleDeactivate(pu.id)}
-                                      className="inline-flex items-center gap-1 rounded-md bg-secondary px-2.5 py-1.5 text-xs font-medium text-muted-foreground hover:text-foreground transition-colors"
-                                    >
-                                      <MinusCircle className="h-3.5 w-3.5" />
-                                      Deactivate
-                                    </button>
-                                  )}
-                                  <button
-                                    onClick={() => handleRemove(pu.id)}
-                                    className="inline-flex items-center gap-1 rounded-md bg-destructive/15 px-2.5 py-1.5 text-xs font-medium text-destructive hover:bg-destructive/25 transition-colors"
-                                  >
-                                    <Trash2 className="h-3.5 w-3.5" />
-                                    Remove
-                                  </button>
-                                </div>
-                              </td>
-                            </tr>
-                          ))}
-                        </tbody>
-                      </table>
-                    </div>
-                  )}
+                {/* Source filter tabs */}
+                <div className="flex gap-2">
+                  {(["all", "admin", "referral"] as const).map((f) => (
+                    <button
+                      key={f}
+                      onClick={() => setSourceFilter(f)}
+                      className={`rounded-md px-3 py-1.5 text-xs font-medium transition-colors ${
+                        sourceFilter === f
+                          ? "bg-primary text-primary-foreground"
+                          : "border border-border text-muted-foreground hover:bg-secondary"
+                      }`}
+                    >
+                      {f === "all" ? "All" : f === "admin" ? "Admin Granted" : "Referral Earned"}
+                    </button>
+                  ))}
                 </div>
+
+                {/* Admin-granted premium table */}
+                {(sourceFilter === "all" || sourceFilter === "admin") && (
+                  <div className="glass-card overflow-hidden">
+                    <div className="px-4 py-3 border-b border-border flex items-center gap-2">
+                      <Star className="h-4 w-4 text-amber-500" />
+                      <h3 className="text-sm font-semibold text-foreground">Admin-Granted Premium</h3>
+                    </div>
+                    {premiumLoading ? (
+                      <div className="py-8 text-center text-sm text-muted-foreground">Loading…</div>
+                    ) : premiumUsers.length === 0 ? (
+                      <div className="py-8 text-center text-sm text-muted-foreground">No admin-granted premium users yet.</div>
+                    ) : (
+                      <div className="overflow-x-auto">
+                        <table className="w-full text-sm">
+                          <thead>
+                            <tr className="border-b border-border">
+                              <th className="text-left py-3 px-4 font-medium text-muted-foreground">Email</th>
+                              <th className="text-left py-3 px-4 font-medium text-muted-foreground">Source</th>
+                              <th className="text-left py-3 px-4 font-medium text-muted-foreground">Expires</th>
+                              <th className="text-left py-3 px-4 font-medium text-muted-foreground">Status</th>
+                              <th className="text-right py-3 px-4 font-medium text-muted-foreground">Actions</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {premiumUsers.map((pu) => (
+                              <tr key={pu.id} className="border-b border-border last:border-0 hover:bg-secondary/50 transition-colors">
+                                <td className="py-3 px-4 text-foreground">{pu.email}</td>
+                                <td className="py-3 px-4">
+                                  <SourceBadge source={pu.source ?? "admin-granted"} />
+                                </td>
+                                <td className="py-3 px-4 text-muted-foreground">{pu.endDate.toLocaleDateString()}</td>
+                                <td className="py-3 px-4">
+                                  <StatusBadge status={pu.isActive && pu.endDate >= new Date() ? "Active" : "Paused"} />
+                                </td>
+                                <td className="py-3 px-4">
+                                  <div className="flex items-center justify-end gap-2">
+                                    {pu.isActive && (
+                                      <button
+                                        onClick={() => handleDeactivate(pu.id)}
+                                        className="inline-flex items-center gap-1 rounded-md bg-secondary px-2.5 py-1.5 text-xs font-medium text-muted-foreground hover:text-foreground transition-colors"
+                                      >
+                                        <MinusCircle className="h-3.5 w-3.5" />
+                                        Deactivate
+                                      </button>
+                                    )}
+                                    <button
+                                      onClick={() => handleRemove(pu.id)}
+                                      className="inline-flex items-center gap-1 rounded-md bg-destructive/15 px-2.5 py-1.5 text-xs font-medium text-destructive hover:bg-destructive/25 transition-colors"
+                                    >
+                                      <Trash2 className="h-3.5 w-3.5" />
+                                      Remove
+                                    </button>
+                                  </div>
+                                </td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {/* Referral-earned premium table */}
+                {(sourceFilter === "all" || sourceFilter === "referral") && (
+                  <div className="glass-card overflow-hidden">
+                    <div className="px-4 py-3 border-b border-border flex items-center gap-2">
+                      <GitBranch className="h-4 w-4 text-emerald-500" />
+                      <h3 className="text-sm font-semibold text-foreground">Referral-Earned Premium</h3>
+                    </div>
+                    {premiumLoading ? (
+                      <div className="py-8 text-center text-sm text-muted-foreground">Loading…</div>
+                    ) : referralPremiumUsers.length === 0 ? (
+                      <div className="py-8 text-center text-sm text-muted-foreground">No referral-earned premium users yet.</div>
+                    ) : (
+                      <div className="overflow-x-auto">
+                        <table className="w-full text-sm">
+                          <thead>
+                            <tr className="border-b border-border">
+                              <th className="text-left py-3 px-4 font-medium text-muted-foreground">Email</th>
+                              <th className="text-left py-3 px-4 font-medium text-muted-foreground">Source</th>
+                              <th className="text-left py-3 px-4 font-medium text-muted-foreground">Referrals</th>
+                              <th className="text-left py-3 px-4 font-medium text-muted-foreground">Granted</th>
+                              <th className="text-left py-3 px-4 font-medium text-muted-foreground">Expires</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {referralPremiumUsers.map((ru) => (
+                              <tr key={ru.uid} className="border-b border-border last:border-0 hover:bg-secondary/50 transition-colors">
+                                <td className="py-3 px-4 text-foreground">{ru.email}</td>
+                                <td className="py-3 px-4">
+                                  <SourceBadge source="referral" />
+                                </td>
+                                <td className="py-3 px-4 text-muted-foreground">{ru.referralCount}</td>
+                                <td className="py-3 px-4 text-muted-foreground">
+                                  {ru.premiumGrantedAt ? ru.premiumGrantedAt.toDate().toLocaleDateString() : "—"}
+                                </td>
+                                <td className="py-3 px-4 text-muted-foreground">
+                                  {ru.premiumUntil ? ru.premiumUntil.toDate().toLocaleDateString() : "—"}
+                                </td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+                    )}
+                  </div>
+                )}
               </div>
             )}
 

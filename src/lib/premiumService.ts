@@ -6,10 +6,14 @@ import {
   deleteDoc,
   getDocs,
   collection,
+  query,
+  where,
   serverTimestamp,
   Timestamp,
 } from "firebase/firestore";
 import { db } from "./firebase";
+
+export type PremiumSource = "paid" | "referral" | "admin-granted";
 
 export interface PremiumUserRecord {
   id: string;
@@ -20,6 +24,16 @@ export interface PremiumUserRecord {
   isActive: boolean;
   assignedBy: string;
   createdAt: Date;
+  source: PremiumSource;
+}
+
+/** Referral-awarded premium users (stored in `users` collection, not `premiumUsers`) */
+export interface ReferralPremiumUser {
+  uid: string;
+  email: string;
+  referralCount: number;
+  premiumUntil: Date;
+  premiumGrantedAt: Date | null;
 }
 
 export interface AppUser {
@@ -61,7 +75,8 @@ export async function assignPremiumUser(
   email: string,
   startDate: Date,
   endDate: Date,
-  adminUid: string
+  adminUid: string,
+  source: PremiumSource = "admin-granted"
 ): Promise<void> {
   await setDoc(doc(db, "premiumUsers", uid), {
     userId: uid,
@@ -70,6 +85,7 @@ export async function assignPremiumUser(
     endDate: Timestamp.fromDate(endDate),
     isActive: true,
     assignedBy: adminUid,
+    source,
     createdAt: serverTimestamp(),
   });
 }
@@ -96,14 +112,35 @@ export async function fetchAllPremiumUsers(): Promise<PremiumUserRecord[]> {
   return snap.docs.map((d) => {
     const data = d.data();
     return {
-      id: d.id,
-      userId: data.userId ?? d.id,
-      email: data.email ?? "",
-      startDate: data.startDate?.toDate?.() ?? new Date(),
-      endDate: data.endDate?.toDate?.() ?? new Date(),
-      isActive: data.isActive ?? false,
+      id:         d.id,
+      userId:     data.userId     ?? d.id,
+      email:      data.email      ?? "",
+      startDate:  data.startDate?.toDate?.() ?? new Date(),
+      endDate:    data.endDate?.toDate?.()   ?? new Date(),
+      isActive:   data.isActive   ?? false,
       assignedBy: data.assignedBy ?? "",
-      createdAt: data.createdAt?.toDate?.() ?? new Date(),
+      createdAt:  data.createdAt?.toDate?.() ?? new Date(),
+      source:     (data.source as PremiumSource | undefined) ?? "admin-granted",
     };
   });
+}
+
+// ─── Fetch referral-awarded premium users (from `users` collection) ────────────
+export async function fetchReferralPremiumUsers(): Promise<ReferralPremiumUser[]> {
+  const snap = await getDocs(
+    query(collection(db, "users"), where("premiumSource", "==", "referral"))
+  );
+  const now = new Date();
+  return snap.docs
+    .map((d) => {
+      const data = d.data();
+      return {
+        uid:             d.id,
+        email:           data.email          ?? "",
+        referralCount:   data.referralCount  ?? 0,
+        premiumUntil:    data.premiumUntil?.toDate?.()    ?? new Date(0),
+        premiumGrantedAt: data.premiumGrantedAt?.toDate?.() ?? null,
+      };
+    })
+    .filter((u) => u.premiumUntil >= now); // only currently active
 }

@@ -22,10 +22,14 @@ const REFERRAL_TIERS = [
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 export interface ReferralStats {
-  referralCode: string;
-  referralCount: number;
-  referredBy: string | null;
-  premiumUntil: Timestamp | null;
+  referralCode:          string;
+  referralCount:         number;
+  referredBy:            string | null;
+  premiumUntil:          Timestamp | null;
+  premiumSource:         string | null;
+  premiumGrantedAt:      Timestamp | null;
+  referralRewardApplied: boolean;
+  referralTierGranted:   number;
 }
 
 export interface ReferredUser {
@@ -100,9 +104,13 @@ export async function getReferralStats(uid: string): Promise<ReferralStats | nul
 
   return {
     referralCode,
-    referralCount: (d.referralCount as number | undefined)  ?? 0,
-    referredBy:    (d.referredBy  as string | null | undefined) ?? null,
-    premiumUntil:  (d.premiumUntil as Timestamp | null | undefined) ?? null,
+    referralCount:         (d.referralCount         as number  | undefined) ?? 0,
+    referredBy:            (d.referredBy            as string  | null | undefined) ?? null,
+    premiumUntil:          (d.premiumUntil          as Timestamp | null | undefined) ?? null,
+    premiumSource:         (d.premiumSource         as string  | null | undefined) ?? null,
+    premiumGrantedAt:      (d.premiumGrantedAt      as Timestamp | null | undefined) ?? null,
+    referralRewardApplied: (d.referralRewardApplied as boolean | undefined) ?? false,
+    referralTierGranted:   (d.referralTierGranted   as number  | undefined) ?? 0,
   };
 }
 
@@ -184,21 +192,37 @@ export async function processReferralOnSignup(
 
   // 6. Re-read updated count and check reward tiers
   const updatedSnap = await getDoc(referrerRef);
-  const newCount    = updatedSnap.data()?.referralCount ?? 0;
-  await checkAndAwardPremium(referrerUid, newCount, updatedSnap.data()?.premiumUntil ?? null);
+  const updatedData  = updatedSnap.data() ?? {};
+  await checkAndAwardPremium(
+    referrerUid,
+    updatedData.referralCount     ?? 0,
+    updatedData.premiumUntil      ?? null,
+    updatedData.referralTierGranted ?? 0,
+  );
 }
 
 /**
  * Checks if the referrer has crossed a reward tier and extends premiumUntil.
- * Only awards when the count *exactly* hits a tier to prevent double-awards.
+ *
+ * Uses >= threshold (not exact match) so users who accumulated referrals before
+ * the system launched are still rewarded.  The `referralTierGranted` field acts
+ * as an idempotency guard so each tier is only awarded once.
  */
 async function checkAndAwardPremium(
   uid: string,
   count: number,
-  currentPremiumUntil: Timestamp | null
+  currentPremiumUntil: Timestamp | null,
+  currentTierGranted: number,           // 0 = none, 1 = first tier, 2 = second
 ): Promise<void> {
-  const tier = REFERRAL_TIERS.find((t) => t.required === count);
-  if (!tier) return;
+  // Find every tier that is newly eligible (count qualifies AND not yet applied)
+  const eligibleTiers = REFERRAL_TIERS.filter(
+    (t, idx) => count >= t.required && idx + 1 > currentTierGranted
+  );
+  if (eligibleTiers.length === 0) return;
+
+  // Apply only the highest newly eligible tier
+  const tier      = eligibleTiers[eligibleTiers.length - 1];
+  const tierIndex = REFERRAL_TIERS.indexOf(tier) + 1; // 1-based
 
   const now       = new Date();
   const baseDate  = currentPremiumUntil
@@ -211,8 +235,28 @@ async function checkAndAwardPremium(
   newExpiry.setMonth(newExpiry.getMonth() + tier.months);
 
   await updateDoc(doc(db, "users", uid), {
-    premiumUntil: Timestamp.fromDate(newExpiry),
+    premiumUntil:          Timestamp.fromDate(newExpiry),
+    premiumSource:         "referral",
+    premiumGrantedAt:      serverTimestamp(),
+    referralRewardApplied: true,
+    referralTierGranted:   tierIndex,
   });
+}
+
+/**
+ * Public helper — call on dashboard load to catch users who accumulated
+ * referrals before this system was deployed (or whose reward write failed).
+ */
+export async function checkAndAwardPremiumForUser(uid: string): Promise<void> {
+  const snap = await getDoc(doc(db, "users", uid));
+  if (!snap.exists()) return;
+  const d = snap.data();
+  await checkAndAwardPremium(
+    uid,
+    d.referralCount       ?? 0,
+    d.premiumUntil        ?? null,
+    d.referralTierGranted ?? 0,
+  );
 }
 
 // ─── Utility ──────────────────────────────────────────────────────────────────
@@ -227,3 +271,4 @@ export function isPremiumActive(premiumUntil: Timestamp | null): boolean {
   if (!premiumUntil) return false;
   return premiumUntil.toMillis() > Date.now();
 }
+

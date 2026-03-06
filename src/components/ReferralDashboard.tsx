@@ -8,10 +8,11 @@ import {
   buildReferralLink,
   getNextTier,
   isPremiumActive,
+  checkAndAwardPremiumForUser,
   ReferralStats,
   ReferredUser,
 } from "@/lib/referralService";
-import { Timestamp } from "firebase/firestore";
+import { Timestamp } from "firebase/firestore"
 
 // ─── Sub-components ───────────────────────────────────────────────────────────
 
@@ -68,21 +69,24 @@ function TierBadge({ months, required }: { months: number; required: number }) {
 export function ReferralDashboard() {
   const { firebaseUser } = useAuth();
 
-  const [stats, setStats]             = useState<ReferralStats | null>(null);
+  const [stats, setStats]                 = useState<ReferralStats | null>(null);
   const [referredUsers, setReferredUsers] = useState<ReferredUser[]>([]);
-  const [loading, setLoading]         = useState(true);
-  const [copied, setCopied]           = useState(false);
+  const [loading, setLoading]             = useState(true);
+  const [copied, setCopied]               = useState(false);
 
   const load = useCallback(async () => {
     if (!firebaseUser) return;
     setLoading(true);
     try {
+      // Run premium check first (catch back-dated referral counts)
+      await checkAndAwardPremiumForUser(firebaseUser.uid);
+
       const [s, ru] = await Promise.all([
         getReferralStats(firebaseUser.uid),
         getReferredUsers(firebaseUser.uid),
       ]);
-      setStats(s);
       setReferredUsers(ru);
+      setStats(s);
     } catch {
       toast.error("Failed to load referral data.");
     } finally {
@@ -140,7 +144,11 @@ export function ReferralDashboard() {
 
       {/* ── Stat cards ── */}
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
-        <StatCard icon={Users}  label="Total Referrals"  value={count} />
+        <StatCard
+          icon={Users}
+          label="Total Referrals"
+          value={count}
+        />
         <StatCard
           icon={Star}
           label="Premium Status"
