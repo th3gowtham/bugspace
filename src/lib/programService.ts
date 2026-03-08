@@ -20,12 +20,12 @@ import type { ProgramData } from "@/components/ProgramCard";
 export interface ProgramFormData {
   programName: string;
   companyName: string;
-  platformType: string;
-  bountyRange: string;
-  programUrl: string;
-  scope: string[];        // array of in-scope domains / targets
-  programRules: string;
-  disclosureEmail: string;
+  platformType?: string;
+  bountyRange?: string;
+  programUrl?: string;
+  scope?: string[];        // array of in-scope domains / targets
+  programRules?: string;
+  disclosureEmail?: string;
   isPremium: boolean;
   status?: string;        // "active" | "paused" | "closed" | "inactive"
 }
@@ -33,12 +33,12 @@ export interface ProgramFormData {
 export interface FirestoreProgram {
   programName: string;
   companyName: string;
-  platformType: string;
+  platformType?: string;
   bountyRange?: string;
   programUrl?: string;
-  scope: string[];
-  programRules: string;
-  disclosureEmail: string;
+  scope?: string[];
+  programRules?: string;
+  disclosureEmail?: string;
   createdBy: string;
   createdAt: { toDate: () => Date } | null;
   updatedAt: { toDate: () => Date } | null;
@@ -51,14 +51,10 @@ export interface FirestoreProgram {
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 export function validateProgramForm(data: Partial<ProgramFormData>): string | null {
-  if (!data.programName?.trim())     return "Program name is required.";
-  if (!data.companyName?.trim())     return "Company name is required.";
-  if (!data.platformType?.trim())    return "Platform type is required.";
-  if (!data.scope || data.scope.filter(Boolean).length === 0)
-                                     return "At least one scope entry is required.";
-  if (!data.programRules?.trim())    return "Program rules are required.";
-  if (!data.disclosureEmail?.trim()) return "Disclosure email is required.";
-  if (!EMAIL_RE.test(data.disclosureEmail!)) return "Disclosure email must be a valid email address.";
+  if (!data.programName?.trim()) return "Program name is required.";
+  if (!data.companyName?.trim()) return "Company name is required.";
+  if (data.disclosureEmail?.trim() && !EMAIL_RE.test(data.disclosureEmail.trim()))
+    return "Disclosure email must be a valid email address.";
   return null;
 }
 
@@ -101,12 +97,12 @@ export async function updateProgram(
   await updateDoc(ref, {
     programName:     formData.programName.trim(),
     companyName:     formData.companyName.trim(),
-    platformType:    formData.platformType,
-    bountyRange:     formData.bountyRange?.trim() || "Not specified",
+    platformType:    formData.platformType || "self-hosted",
+    bountyRange:     formData.bountyRange?.trim() || "",
     programUrl:      formData.programUrl?.trim() || "",
-    scope:           formData.scope.map((s) => s.trim()).filter(Boolean),
-    programRules:    formData.programRules.trim(),
-    disclosureEmail: formData.disclosureEmail.trim(),
+    scope:           (formData.scope ?? []).map((s) => s.trim()).filter(Boolean),
+    programRules:    formData.programRules?.trim() || "",
+    disclosureEmail: formData.disclosureEmail?.trim() || "",
     isPremium:       formData.isPremium ?? false,
     status:          formData.status ?? "active",
     updatedAt:       serverTimestamp(),
@@ -142,12 +138,12 @@ export async function addProgram(
   const docRef = await addDoc(collection(db, "programs"), {
     programName:      formData.programName.trim(),
     companyName:      formData.companyName.trim(),
-    platformType:     formData.platformType,
-    bountyRange:      formData.bountyRange?.trim() || "Not specified",
+    platformType:     formData.platformType || "self-hosted",
+    bountyRange:      formData.bountyRange?.trim() || "",
     programUrl:       formData.programUrl?.trim() || "",
-    scope:            formData.scope.map((s) => s.trim()).filter(Boolean),
-    programRules:     formData.programRules.trim(),
-    disclosureEmail:  formData.disclosureEmail.trim(),
+    scope:            (formData.scope ?? []).map((s) => s.trim()).filter(Boolean),
+    programRules:     formData.programRules?.trim() || "",
+    disclosureEmail:  formData.disclosureEmail?.trim() || "",
     createdBy:        uid,
     createdAt:        serverTimestamp(),
     updatedAt:        serverTimestamp(),

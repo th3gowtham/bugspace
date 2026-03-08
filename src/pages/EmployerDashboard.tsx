@@ -289,20 +289,13 @@ const EmployerDashboard = () => {
     if (formStep === 0) {
       if (!form.programName.trim()) { toast.error("Program name is required."); return; }
       if (!form.companyName.trim()) { toast.error("Company name is required."); return; }
-      if (!form.platformType)       { toast.error("Platform type is required."); return; }
     }
     if (formStep === 1) {
-      const scope = form.scopeRaw.split("\n").map((s) => s.trim()).filter(Boolean);
-      const err = validateProgramForm({
-        programName: form.programName,
-        companyName: form.companyName,
-        platformType: form.platformType,
-        programUrl:  form.programUrl,
-        scope,
-        programRules: form.programRules,
-        disclosureEmail: form.disclosureEmail,
-      });
-      if (err) { toast.error(err); return; }
+      // Validate email format if provided
+      if (form.disclosureEmail.trim()) {
+        const err = validateProgramForm({ programName: form.programName, companyName: form.companyName, disclosureEmail: form.disclosureEmail });
+        if (err) { toast.error(err); return; }
+      }
     }
     setFormStep(formStep + 1);
   };
@@ -713,7 +706,7 @@ const EmployerDashboard = () => {
                         onChange={(v) => setField("companyName", v)}
                       />
                       <div>
-                        <label className="block text-sm font-medium text-foreground mb-1.5">Platform Type</label>
+                        <label className="block text-sm font-medium text-foreground mb-1.5">Platform Type <span className="text-muted-foreground font-normal">(optional)</span></label>
                         <select
                           value={form.platformType}
                           onChange={(e) => setField("platformType", e.target.value)}
@@ -726,19 +719,19 @@ const EmployerDashboard = () => {
                         </select>
                       </div>
                       <FormField
-                        label="Bounty Range"
+                        label="Bounty Range (optional)"
                         placeholder="e.g. $500 – $10,000"
                         value={form.bountyRange}
                         onChange={(v) => setField("bountyRange", v)}
                       />
                       <FormField
-                        label="Program URL"
+                        label="Program URL (optional)"
                         placeholder="https://company.com/security"
                         value={form.programUrl}
                         onChange={(v) => setField("programUrl", v)}
                       />
                       <div>
-                        <label className="block text-sm font-medium text-foreground mb-1.5">Status</label>
+                        <label className="block text-sm font-medium text-foreground mb-1.5">Status <span className="text-muted-foreground font-normal">(optional)</span></label>
                         <select
                           value={form.status}
                           onChange={(e) => setField("status", e.target.value)}
@@ -756,7 +749,7 @@ const EmployerDashboard = () => {
                   {formStep === 1 && (
                     <>
                       <div>
-                        <label className="block text-sm font-medium text-foreground mb-1.5">Scope</label>
+                        <label className="block text-sm font-medium text-foreground mb-1.5">Scope <span className="text-muted-foreground font-normal">(optional)</span></label>
                         <textarea
                           rows={4}
                           placeholder="List in-scope domains, one per line..."
@@ -766,7 +759,7 @@ const EmployerDashboard = () => {
                         />
                       </div>
                       <div>
-                        <label className="block text-sm font-medium text-foreground mb-1.5">Rules Summary</label>
+                        <label className="block text-sm font-medium text-foreground mb-1.5">Rules Summary <span className="text-muted-foreground font-normal">(optional)</span></label>
                         <textarea
                           rows={3}
                           placeholder="Brief rules and guidelines..."
@@ -776,7 +769,7 @@ const EmployerDashboard = () => {
                         />
                       </div>
                       <FormField
-                        label="Disclosure Email"
+                        label="Disclosure Email (optional)"
                         placeholder="security@company.com"
                         type="email"
                         value={form.disclosureEmail}
