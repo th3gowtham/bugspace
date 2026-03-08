@@ -51,7 +51,7 @@ export function generateReferralCode(): string {
 
 /** Build a shareable referral URL */
 export function buildReferralLink(code: string): string {
-  return `https://bugspace.netlify.app/signup?ref=${code}`;
+  return `https://bugspace.in/signup?ref=${code}`;
 }
 
 // ─── LocalStorage helpers ─────────────────────────────────────────────────────
