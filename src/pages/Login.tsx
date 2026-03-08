@@ -1,5 +1,5 @@
 ﻿import { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 import { Shield, AlertCircle, Loader2 } from "lucide-react";
 import { signInWithGoogle, getRedirectPath } from "@/lib/authService";
 import { useAuth } from "@/contexts/AuthContext";
@@ -8,11 +8,13 @@ const Login = () => {
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
+  const location = useLocation();
   const { user, role } = useAuth();
+  const from = (location.state as { from?: Location })?.from?.pathname || null;
 
   // Redirect if already logged in
   if (user) {
-    navigate(getRedirectPath(role), { replace: true });
+    navigate(from ?? getRedirectPath(role), { replace: true });
     return null;
   }
 
@@ -21,7 +23,7 @@ const Login = () => {
     setLoading(true);
     const result = await signInWithGoogle();
     if (result.success) {
-      navigate(getRedirectPath(result.role ?? "user"), { replace: true });
+      navigate(from ?? getRedirectPath(result.role ?? "user"), { replace: true });
     } else {
       setError(result.error || "Failed to sign in with Google");
     }

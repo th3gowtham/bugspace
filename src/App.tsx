@@ -33,7 +33,11 @@ const App = () => (
             <Routes>
               {/* Public routes */}
               <Route path="/" element={<Index />} />
-              <Route path="/browse" element={<BrowsePrograms />} />
+              <Route path="/browse" element={
+                <ProtectedRoute allowedRoles={["user"]}>
+                  <BrowsePrograms />
+                </ProtectedRoute>
+              } />
               <Route path="/premium" element={<PremiumPrograms />} />
               <Route path="/program/:id" element={<ProgramDetail />} />
               
