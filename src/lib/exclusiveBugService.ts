@@ -2,6 +2,7 @@ import {
   collection,
   addDoc,
   getDocs,
+  getDoc,
   doc,
   updateDoc,
   deleteDoc,
@@ -37,6 +38,7 @@ export interface ExclusiveBug {
   createdAt: Date;
   updatedAt: Date;
   status: "published";
+  accessType: "free" | "premium";
 }
 
 export interface ExclusiveBugInput {
@@ -49,6 +51,7 @@ export interface ExclusiveBugInput {
   currency: BugCurrency;
   categoryId: string;
   categoryName: string;
+  accessType: "free" | "premium";
 }
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
@@ -78,6 +81,7 @@ function mapBug(id: string, data: Record<string, unknown>): ExclusiveBug {
     createdAt:        toDate(data.createdAt),
     updatedAt:        toDate(data.updatedAt),
     status:           "published",
+    accessType:       (data.accessType as "free" | "premium") ?? "premium",
   };
 }
 
@@ -117,6 +121,14 @@ export async function fetchExclusiveBugs(): Promise<ExclusiveBug[]> {
   return snap.docs.map((d) => mapBug(d.id, d.data() as Record<string, unknown>));
 }
 
+export async function fetchExclusiveBugsByIds(ids: string[]): Promise<ExclusiveBug[]> {
+  if (ids.length === 0) return [];
+  const snaps = await Promise.all(ids.map((id) => getDoc(doc(db, BUGS_COL, id))));
+  return snaps
+    .filter((s) => s.exists())
+    .map((s) => mapBug(s.id, s.data() as Record<string, unknown>));
+}
+
 export async function fetchEmployerBugs(employerUid: string): Promise<ExclusiveBug[]> {
   // Fetch all then filter client-side (avoids composite index requirement)
   const all = await fetchExclusiveBugs();
@@ -137,6 +149,7 @@ export async function addExclusiveBug(
     currency:         input.currency,
     categoryId:       input.categoryId,
     categoryName:     input.categoryName,
+    accessType:       input.accessType,
     createdBy:        employerUid,
     status:           "published",
     createdAt:        serverTimestamp(),
@@ -159,6 +172,7 @@ export async function updateExclusiveBug(
     currency:         input.currency,
     categoryId:       input.categoryId,
     categoryName:     input.categoryName,
+    accessType:       input.accessType,
     updatedAt:        serverTimestamp(),
   });
 }

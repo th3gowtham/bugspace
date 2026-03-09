@@ -31,7 +31,7 @@ service cloud.firestore {
     // Safe fields that users can update on their own profile
     function isSafeUserUpdate() {
       return request.resource.data.diff(resource.data).affectedKeys()
-        .hasOnly(['fullName', 'updatedAt', 'seenAnnouncements']);
+        .hasOnly(['fullName', 'updatedAt', 'seenAnnouncements', 'bookmarkedBugs']);
     }
 
     // Fields that the referral system may update on any user document.

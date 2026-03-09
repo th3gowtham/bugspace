@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo } from "react";
-import { Search, Lock, ChevronDown, ExternalLink, Bug, Star, X, CalendarDays, DollarSign } from "lucide-react";
+import { Search, Lock, ChevronDown, ExternalLink, Bug, Star, X, CalendarDays, DollarSign, Bookmark } from "lucide-react";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
 import { useAuth } from "@/contexts/AuthContext";
@@ -10,6 +10,11 @@ import {
   type ExclusiveBug,
   type ExclusiveBugCategory,
 } from "@/lib/exclusiveBugService";
+import {
+  getBugBookmarkIds,
+  addBugBookmark,
+  removeBugBookmark,
+} from "@/lib/bugBookmarkService";
 
 // ─── Sub-components ───────────────────────────────────────────────────────────
 
@@ -175,9 +180,50 @@ const ExclusiveBugs = () => {
 
   const [search,         setSearch]         = useState("");
   const [filterCategory, setFilterCategory] = useState("");
+  const [filterAccess,   setFilterAccess]   = useState<"" | "free" | "premium">("")
 
   const [selectedBug,   setSelectedBug]   = useState<ExclusiveBug | null>(null);
   const [showUpgradeModal, setShowUpgradeModal] = useState(false);
+
+  // ─── Bookmark state ────────────────────────────────────────────────────────
+
+  const [bookmarkedIds, setBookmarkedIds] = useState<Set<string>>(new Set());
+  const [togglingId, setTogglingId] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!firebaseUser) return;
+    getBugBookmarkIds(firebaseUser.uid).then((ids) => setBookmarkedIds(new Set(ids)));
+  }, [firebaseUser]);
+
+  const handleToggleBookmark = async (bugId: string) => {
+    if (!firebaseUser) return;
+    const isBookmarked = bookmarkedIds.has(bugId);
+    // Optimistic update
+    setBookmarkedIds((prev) => {
+      const next = new Set(prev);
+      if (isBookmarked) next.delete(bugId); else next.add(bugId);
+      return next;
+    });
+    setTogglingId(bugId);
+    try {
+      if (isBookmarked) {
+        await removeBugBookmark(firebaseUser.uid, bugId);
+      } else {
+        await addBugBookmark(firebaseUser.uid, bugId);
+        toast.success("Bug bookmarked!");
+      }
+    } catch {
+      // Roll back
+      setBookmarkedIds((prev) => {
+        const next = new Set(prev);
+        if (isBookmarked) next.add(bugId); else next.delete(bugId);
+        return next;
+      });
+      toast.error("Failed to update bookmark.");
+    } finally {
+      setTogglingId(null);
+    }
+  };
 
   // ─── Load data ─────────────────────────────────────────────────────────────
 
@@ -204,6 +250,7 @@ const ExclusiveBugs = () => {
   const filtered = useMemo(() => {
     const q = search.toLowerCase().trim();
     return bugs.filter((b) => {
+      if (filterAccess && b.accessType !== filterAccess) return false;
       if (filterCategory && b.categoryId !== filterCategory) return false;
       if (q) {
         return (
@@ -214,7 +261,7 @@ const ExclusiveBugs = () => {
       }
       return true;
     });
-  }, [bugs, search, filterCategory]);
+  }, [bugs, search, filterCategory, filterAccess]);
 
   // ─── Render ────────────────────────────────────────────────────────────────
 
@@ -278,15 +325,33 @@ const ExclusiveBugs = () => {
             </select>
             <ChevronDown className="pointer-events-none absolute right-2 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
           </div>
-          {(search || filterCategory) && (
+          {(search || filterCategory || filterAccess) && (
             <button
-              onClick={() => { setSearch(""); setFilterCategory(""); }}
+              onClick={() => { setSearch(""); setFilterCategory(""); setFilterAccess(""); }}
               className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors"
             >
               <X className="h-3.5 w-3.5" />
               Clear
             </button>
           )}
+        </div>
+
+        {/* Access type filter pills */}
+        <div className="flex gap-2">
+          {([["", "All Bugs"], ["free", "Free"], ["premium", "Premium"]] as const).map(([val, label]) => (
+            <button
+              key={val}
+              onClick={() => setFilterAccess(val)}
+              className={`inline-flex items-center gap-1.5 rounded-md px-3 py-1.5 text-xs font-medium transition-colors ${
+                filterAccess === val
+                  ? "bg-primary text-primary-foreground"
+                  : "border border-border text-muted-foreground hover:bg-secondary"
+              }`}
+            >
+              {val === "premium" && <Lock className="h-3 w-3" />}
+              {label}
+            </button>
+          ))}
         </div>
 
         {/* Grid */}
@@ -314,17 +379,43 @@ const ExclusiveBugs = () => {
               <div
                 key={bug.bugId}
                 className="glass-card p-5 flex flex-col gap-3 hover:border-primary/30 transition-colors cursor-pointer group"
-                onClick={() => setSelectedBug(bug)}
+                onClick={() => {
+                  if (bug.accessType === "premium" && !isPremium) {
+                    setShowUpgradeModal(true);
+                  } else {
+                    setSelectedBug(bug);
+                  }
+                }}
               >
-                {/* Category + date */}
+                {/* Category + date + bookmark */}
                 <div className="flex items-center justify-between gap-2">
                   <span className="inline-flex items-center rounded-full border border-primary/30 bg-primary/10 px-2 py-0.5 text-xs font-medium text-primary truncate max-w-[140px]">
                     {bug.categoryName}
                   </span>
-                  <span className="text-xs text-muted-foreground shrink-0 flex items-center gap-1">
-                    <CalendarDays className="h-3 w-3" />
-                    {bug.createdAt.toLocaleDateString()}
-                  </span>
+                  <div className="flex items-center gap-2 shrink-0">
+                    <span className="text-xs text-muted-foreground flex items-center gap-1">
+                      <CalendarDays className="h-3 w-3" />
+                      {bug.createdAt.toLocaleDateString()}
+                    </span>
+                    {firebaseUser && (
+                      <button
+                        onClick={(e) => { e.stopPropagation(); handleToggleBookmark(bug.bugId); }}
+                        disabled={togglingId === bug.bugId}
+                        title="Bookmark this bug"
+                        className={`rounded p-0.5 transition-colors disabled:opacity-50 ${
+                          bookmarkedIds.has(bug.bugId)
+                            ? "text-primary"
+                            : "text-muted-foreground hover:text-foreground"
+                        }`}
+                      >
+                        <Bookmark
+                          className={`h-4 w-4 transition-all ${
+                            bookmarkedIds.has(bug.bugId) ? "fill-primary" : ""
+                          }`}
+                        />
+                      </button>
+                    )}
+                  </div>
                 </div>
 
                 {/* Title */}
@@ -343,13 +434,17 @@ const ExclusiveBugs = () => {
                     <DollarSign className="h-3 w-3" />
                     {bug.currency} {bug.bountyAmount.toLocaleString()}
                   </span>
-                  {!isPremium ? (
+                  {bug.accessType === "free" ? (
+                    <span className="flex items-center gap-1 text-xs font-semibold text-green-400 bg-green-500/10 rounded-full px-2 py-0.5">
+                      FREE
+                    </span>
+                  ) : isPremium ? (
+                    <span className="text-xs text-primary font-medium">View Details →</span>
+                  ) : (
                     <span className="flex items-center gap-1 text-xs text-amber-400">
                       <Lock className="h-3 w-3" />
                       Premium
                     </span>
-                  ) : (
-                    <span className="text-xs text-primary font-medium">View Details →</span>
                   )}
                 </div>
               </div>
@@ -364,7 +459,7 @@ const ExclusiveBugs = () => {
       {selectedBug && (
         <BugDetailModal
           bug={selectedBug}
-          isPremium={!!isPremium}
+          isPremium={!!isPremium || selectedBug.accessType === "free"}
           onClose={() => setSelectedBug(null)}
           onUpgrade={() => { setSelectedBug(null); setShowUpgradeModal(true); }}
         />

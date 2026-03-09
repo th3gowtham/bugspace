@@ -21,6 +21,7 @@ import ForgotPassword from "./pages/ForgotPassword";
 import Dashboard from "./pages/Dashboard";
 import BountyTracker from "./pages/BountyTracker";
 import ExclusiveBugs from "./pages/ExclusiveBugs";
+import ExclusiveBugDetail from "./pages/ExclusiveBugDetail";
 import ResearchNotes from "./pages/ResearchNotes";
 import EmployerDashboard from "./pages/EmployerDashboard";
 import AdminPanel from "./pages/AdminPanel";
@@ -139,6 +140,11 @@ const App = () => (
               <Route path="/exclusive-bugs" element={
                 <ProtectedRoute allowedRoles={["user"]}>
                   <ExclusiveBugs />
+                </ProtectedRoute>
+              } />
+              <Route path="/exclusive-bugs/:bugId" element={
+                <ProtectedRoute allowedRoles={["user"]}>
+                  <ExclusiveBugDetail />
                 </ProtectedRoute>
               } />
 

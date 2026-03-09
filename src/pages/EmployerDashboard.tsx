@@ -41,6 +41,7 @@ function blankBugForm(): ExclusiveBugInput {
     pocLink: "", referenceLink: "",
     bountyAmount: 0, currency: "USD",
     categoryId: "", categoryName: "",
+    accessType: "premium",
   };
 }
 
@@ -151,6 +152,7 @@ const EmployerDashboard = () => {
       pocLink: bug.pocLink, referenceLink: bug.referenceLink,
       bountyAmount: bug.bountyAmount, currency: bug.currency,
       categoryId: bug.categoryId, categoryName: bug.categoryName,
+      accessType: bug.accessType ?? "premium",
     });
     setShowBugModal(true);
   }
@@ -1016,6 +1018,36 @@ const EmployerDashboard = () => {
                   )}
                 </div>
               </div>
+
+              {/* Free / Premium toggle */}
+              <div className="flex items-center justify-between rounded-md border border-border px-4 py-3">
+                <div>
+                  <p className="text-sm font-medium text-foreground">Access Type</p>
+                  <p className="text-xs text-muted-foreground mt-0.5">
+                    {bugForm.accessType === "premium" ? "Premium only — requires active subscription" : "Free — accessible to all logged-in users"}
+                  </p>
+                </div>
+                <div className="flex items-center gap-2 shrink-0">
+                  <span className={`text-xs font-medium ${bugForm.accessType === "free" ? "text-green-400" : "text-muted-foreground"}`}>Free</span>
+                  <button
+                    type="button"
+                    role="switch"
+                    aria-checked={bugForm.accessType === "premium"}
+                    onClick={() => setBugForm((p) => ({ ...p, accessType: p.accessType === "premium" ? "free" : "premium" }))}
+                    className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors focus:outline-none ${
+                      bugForm.accessType === "premium" ? "bg-amber-500" : "bg-green-500"
+                    }`}
+                  >
+                    <span
+                      className={`pointer-events-none inline-block h-5 w-5 rounded-full bg-white shadow transition-transform ${
+                        bugForm.accessType === "premium" ? "translate-x-5" : "translate-x-0"
+                      }`}
+                    />
+                  </button>
+                  <span className={`text-xs font-medium ${bugForm.accessType === "premium" ? "text-amber-400" : "text-muted-foreground"}`}>Premium</span>
+                </div>
+              </div>
+
               {/* Actions */}
               <div className="flex justify-end gap-2 pt-1">
                 <button type="button" onClick={() => { setShowBugModal(false); setEditingBug(null); }}

@@ -4,10 +4,16 @@ import { Footer } from "@/components/Footer";
 import { ProgramCard } from "@/components/ProgramCard";
 import type { ProgramData } from "@/components/ProgramCard";
 import { ReferralDashboard } from "@/components/ReferralDashboard";
-import { Bookmark, Bell, Settings, Inbox, Users2, Megaphone, X } from "lucide-react";
+import { Bookmark, Bell, Settings, Inbox, Users2, Megaphone, X, Bug, Lock } from "lucide-react";
 import { useState, useEffect, useRef } from "react";
 import { useAuth } from "@/contexts/AuthContext";
+import { useNavigate } from "react-router-dom";
 import { fetchUserBookmarkPrograms } from "@/lib/bookmarkService";
+import {
+  fetchBookmarkedBugs,
+  removeBugBookmark,
+} from "@/lib/bugBookmarkService";
+import type { ExclusiveBug } from "@/lib/exclusiveBugService";
 import {
   getAllActiveAnnouncements,
   getSeenAnnouncementIds,
@@ -18,6 +24,7 @@ import { toast } from "sonner";
 
 const tabs = [
   { id: "bookmarks", label: "Bookmarked",     icon: Bookmark },
+  { id: "savedbugs", label: "Saved Bugs",      icon: Bug },
   { id: "updates",   label: "Recent Updates", icon: Bell },
   { id: "referrals", label: "Referrals",       icon: Users2 },
   { id: "settings",  label: "Settings",        icon: Settings },
@@ -25,11 +32,16 @@ const tabs = [
 
 const Dashboard = () => {
   const [activeTab, setActiveTab] = useState("bookmarks");
-  const { firebaseUser } = useAuth();
+  const { firebaseUser, isPremium } = useAuth();
+  const navigate = useNavigate();
 
   // â”€â”€ bookmarks â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   const [bookmarked, setBookmarked] = useState<ProgramData[]>([]);
   const [bookmarksLoading, setBookmarksLoading] = useState(false);
+
+  // saved bugs
+  const [savedBugs, setSavedBugs] = useState<ExclusiveBug[]>([]);
+  const [savedBugsLoading, setSavedBugsLoading] = useState(false);
 
   // â”€â”€ announcements â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   const [allAnnouncements, setAllAnnouncements] = useState<Announcement[]>([]);
@@ -48,6 +60,15 @@ const Dashboard = () => {
       .catch(() => toast.error("Failed to load bookmarks."))
       .finally(() => setBookmarksLoading(false));
   }, [firebaseUser]);
+
+  useEffect(() => {
+    if (!firebaseUser || activeTab !== "savedbugs") return;
+    setSavedBugsLoading(true);
+    fetchBookmarkedBugs(firebaseUser.uid)
+      .then(setSavedBugs)
+      .catch(() => toast.error("Failed to load saved bugs."))
+      .finally(() => setSavedBugsLoading(false));
+  }, [firebaseUser, activeTab]);
 
   // Fetch all active announcements + seen IDs together (single round-trip pair)
   useEffect(() => {
@@ -98,6 +119,19 @@ const Dashboard = () => {
     handleMarkSeen(ann);
     setActiveTab("updates");
     setBellOpen(false);
+  };
+
+  const handleRemoveBugBookmark = async (bugId: string) => {
+    if (!firebaseUser) return;
+    // Optimistic remove
+    setSavedBugs((prev) => prev.filter((b) => b.bugId !== bugId));
+    try {
+      await removeBugBookmark(firebaseUser.uid, bugId);
+    } catch {
+      toast.error("Failed to remove bookmark.");
+      // Reload to restore
+      fetchBookmarkedBugs(firebaseUser.uid).then(setSavedBugs).catch(() => {});
+    }
   };
 
   return (
@@ -252,6 +286,67 @@ const Dashboard = () => {
                     icon={Bookmark}
                     title="No bookmarked programs"
                     description="Bookmark programs to track them here."
+                  />
+                )}
+              </div>
+            )}
+
+            {/* Saved Bugs */}
+            {activeTab === "savedbugs" && (
+              <div>
+                {savedBugsLoading ? (
+                  <p className="text-sm text-muted-foreground py-16 text-center">Loading saved bugs\u2026</p>
+                ) : savedBugs.length > 0 ? (
+                  <div className="grid gap-4 sm:grid-cols-2">
+                    {savedBugs.map((bug) => (
+                      <div
+                        key={bug.bugId}
+                        className="glass-card p-4 flex flex-col gap-2.5 cursor-pointer hover:border-primary/30 transition-colors"
+                        onClick={() => navigate(`/exclusive-bugs/${bug.bugId}`)}
+                      >
+                        <div className="flex items-start justify-between gap-2">
+                          <div className="flex items-center gap-1.5 flex-wrap">
+                            <span className="inline-flex items-center rounded-full border border-primary/30 bg-primary/10 px-2 py-0.5 text-xs font-medium text-primary">
+                              {bug.categoryName}
+                            </span>
+                            {bug.accessType === "free" ? (
+                              <span className="inline-flex items-center rounded-full bg-green-500/15 px-2 py-0.5 text-xs font-semibold text-green-400">FREE</span>
+                            ) : (
+                              <span className="inline-flex items-center gap-1 rounded-full bg-amber-500/15 px-2 py-0.5 text-xs font-semibold text-amber-400">
+                                <Lock className="h-2.5 w-2.5" />PREMIUM
+                              </span>
+                            )}
+                          </div>
+                          <button
+                            onClick={(e) => { e.stopPropagation(); handleRemoveBugBookmark(bug.bugId); }}
+                            title="Remove bookmark"
+                            className="p-0.5 rounded text-primary hover:text-muted-foreground transition-colors shrink-0"
+                          >
+                            <Bookmark className="h-4 w-4 fill-primary" />
+                          </button>
+                        </div>
+                        <h3 className="text-sm font-semibold text-foreground leading-snug line-clamp-2">
+                          {bug.title}
+                        </h3>
+                        <p className="text-xs text-muted-foreground leading-relaxed line-clamp-3 flex-1">
+                          {bug.summary}
+                        </p>
+                        <div className="flex items-center justify-between pt-1 border-t border-border">
+                          <span className="text-xs font-semibold text-green-400">
+                            {bug.currency} {bug.bountyAmount.toLocaleString()}
+                          </span>
+                          <span className="text-xs text-muted-foreground">
+                            {bug.createdAt.toLocaleDateString()}
+                          </span>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <EmptyState
+                    icon={Bug}
+                    title="No saved bugs"
+                    description="Bookmark exclusive bugs to access them here."
                   />
                 )}
               </div>
