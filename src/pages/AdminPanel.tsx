@@ -2,9 +2,16 @@
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
 import { StatusBadge } from "@/components/Badges";
-import { Shield, Users, BarChart3, Star, Trash2, MinusCircle, Search, DollarSign, TrendingUp, GitBranch } from "lucide-react";
+import { Shield, Users, BarChart3, Star, Trash2, MinusCircle, Search, DollarSign, TrendingUp, GitBranch, Megaphone, Plus, Pencil, ToggleLeft, ToggleRight } from "lucide-react";
 import { collection, getDocs, query, where, orderBy } from "firebase/firestore";
 import { db } from "@/lib/firebase";
+import {
+  fetchAllAnnouncements,
+  createAnnouncement,
+  updateAnnouncement,
+  deleteAnnouncement,
+  type Announcement,
+} from "@/lib/announcementService";
 import {
   fetchAllPremiumUsers,
   fetchAllUsers,
@@ -110,6 +117,14 @@ const AdminPanel = () => {
   const [assigning,             setAssigning]             = useState(false);
   const [sourceFilter,          setSourceFilter]          = useState<"all" | "admin" | "referral">("all");
 
+  // -- announcements tab ---------------------------------------------------
+  const [announcements,         setAnnouncements]         = useState<Announcement[]>([]);
+  const [announcementsLoading,  setAnnouncementsLoading]  = useState(false);
+  const [annTitle,              setAnnTitle]              = useState("");
+  const [annMessage,            setAnnMessage]            = useState("");
+  const [annSaving,             setAnnSaving]             = useState(false);
+  const [editingAnn,            setEditingAnn]            = useState<Announcement | null>(null);
+
   // â”€â”€ load dashboard stats on mount â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   useEffect(() => {
     const now = new Date();
@@ -184,6 +199,77 @@ const AdminPanel = () => {
       setAnalyticsLoaded(true);
     }).catch(() => {});
   }, [activeTab, analyticsLoaded]);
+
+  // -- load announcements tab -----------------------------------------------
+  const loadAnnouncements = () => {
+    setAnnouncementsLoading(true);
+    fetchAllAnnouncements()
+      .then(setAnnouncements)
+      .catch(() => toast.error("Failed to load announcements."))
+      .finally(() => setAnnouncementsLoading(false));
+  };
+
+  useEffect(() => {
+    if (activeTab === "announcements") loadAnnouncements();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activeTab]);
+
+  const handleSaveAnnouncement = async () => {
+    if (!annTitle.trim() || !annMessage.trim()) {
+      toast.error("Title and message are required.");
+      return;
+    }
+    setAnnSaving(true);
+    try {
+      if (editingAnn) {
+        await updateAnnouncement(editingAnn.id, { title: annTitle.trim(), message: annMessage.trim() });
+        toast.success("Announcement updated.");
+      } else {
+        await createAnnouncement(annTitle.trim(), annMessage.trim());
+        toast.success("Announcement created and sent to all researchers.");
+      }
+      setAnnTitle("");
+      setAnnMessage("");
+      setEditingAnn(null);
+      loadAnnouncements();
+    } catch {
+      toast.error("Failed to save announcement.");
+    } finally {
+      setAnnSaving(false);
+    }
+  };
+
+  const handleEditAnnouncement = (ann: Announcement) => {
+    setEditingAnn(ann);
+    setAnnTitle(ann.title);
+    setAnnMessage(ann.message);
+  };
+
+  const handleCancelEdit = () => {
+    setEditingAnn(null);
+    setAnnTitle("");
+    setAnnMessage("");
+  };
+
+  const handleToggleAnnouncement = async (ann: Announcement) => {
+    try {
+      await updateAnnouncement(ann.id, { active: !ann.active });
+      toast.success(`Announcement ${ann.active ? "disabled" : "enabled"}.`);
+      loadAnnouncements();
+    } catch {
+      toast.error("Failed to update announcement status.");
+    }
+  };
+
+  const handleDeleteAnnouncement = async (id: string) => {
+    try {
+      await deleteAnnouncement(id);
+      toast.success("Announcement deleted.");
+      loadAnnouncements();
+    } catch {
+      toast.error("Failed to delete announcement.");
+    }
+  };
 
   // â”€â”€ load premium tab â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   const loadPremiumUsers = () => {
@@ -278,10 +364,11 @@ const AdminPanel = () => {
   ];
 
   const sidebarItems = [
-    { id: "programs",  label: "All Programs",  icon: Shield },
-    { id: "users",     label: "Users",          icon: Users },
-    { id: "analytics", label: "Analytics",      icon: BarChart3 },
-    { id: "premium",   label: "Premium Users",  icon: Star },
+    { id: "programs",      label: "All Programs",  icon: Shield },
+    { id: "users",         label: "Users",          icon: Users },
+    { id: "analytics",    label: "Analytics",      icon: BarChart3 },
+    { id: "premium",      label: "Premium Users",  icon: Star },
+    { id: "announcements", label: "Announcements",  icon: Megaphone },
   ];
 
   return (
@@ -670,6 +757,115 @@ const AdminPanel = () => {
                     )}
                   </div>
                 )}
+              </div>
+            )}
+
+            {/* -- Announcements ------------------------------------------------ */}
+            {activeTab === "announcements" && (
+              <div className="space-y-6">
+                {/* Create / Edit form */}
+                <div className="glass-card p-6 space-y-4">
+                  <h3 className="text-sm font-semibold text-foreground flex items-center gap-2">
+                    <Megaphone className="h-4 w-4 text-primary" />
+                    {editingAnn ? "Edit Announcement" : "New Announcement"}
+                  </h3>
+                  <div>
+                    <label className="block text-xs font-medium text-muted-foreground mb-1">Title</label>
+                    <input
+                      type="text"
+                      placeholder="Announcement title..."
+                      value={annTitle}
+                      onChange={(e) => setAnnTitle(e.target.value)}
+                      className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-medium text-muted-foreground mb-1">Message</label>
+                    <textarea
+                      placeholder="Write your announcement message..."
+                      rows={4}
+                      value={annMessage}
+                      onChange={(e) => setAnnMessage(e.target.value)}
+                      className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring resize-none"
+                    />
+                  </div>
+                  <div className="flex gap-2">
+                    <button
+                      onClick={handleSaveAnnouncement}
+                      disabled={annSaving}
+                      className="flex items-center gap-1.5 rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90 transition-colors disabled:opacity-60"
+                    >
+                      <Plus className="h-3.5 w-3.5" />
+                      {annSaving ? "Saving..." : editingAnn ? "Update" : "Publish Announcement"}
+                    </button>
+                    {editingAnn && (
+                      <button
+                        onClick={handleCancelEdit}
+                        className="rounded-md border border-border px-4 py-2 text-sm font-medium text-muted-foreground hover:bg-secondary transition-colors"
+                      >
+                        Cancel
+                      </button>
+                    )}
+                  </div>
+                </div>
+
+                {/* Announcements list */}
+                <div className="glass-card overflow-hidden">
+                  <div className="px-4 py-3 border-b border-border flex items-center justify-between">
+                    <h3 className="text-sm font-semibold text-foreground">All Announcements</h3>
+                    {!announcementsLoading && (
+                      <span className="text-xs text-muted-foreground">{announcements.length} total</span>
+                    )}
+                  </div>
+                  {announcementsLoading ? (
+                    <div className="py-10 text-center text-sm text-muted-foreground">Loading...</div>
+                  ) : announcements.length === 0 ? (
+                    <div className="py-10 text-center text-sm text-muted-foreground">No announcements yet.</div>
+                  ) : (
+                    <div className="divide-y divide-border">
+                      {announcements.map((ann) => (
+                        <div key={ann.id} className="px-4 py-4 hover:bg-secondary/30 transition-colors">
+                          <div className="flex items-start justify-between gap-3">
+                            <div className="flex-1 min-w-0">
+                              <div className="flex items-center gap-2 mb-1">
+                                <p className="text-sm font-medium text-foreground truncate">{ann.title}</p>
+                                <span className={`shrink-0 inline-flex rounded-full px-2 py-0.5 text-xs font-medium ${ ann.active ? "bg-emerald-500/15 text-emerald-400" : "bg-secondary text-muted-foreground" }`}>
+                                  {ann.active ? "Active" : "Disabled"}
+                                </span>
+                              </div>
+                              <p className="text-xs text-muted-foreground line-clamp-2">{ann.message}</p>
+                              <p className="text-xs text-muted-foreground/60 mt-1">{ann.createdAt.toLocaleDateString()}</p>
+                            </div>
+                            <div className="flex items-center gap-1.5 shrink-0">
+                              <button
+                                onClick={() => handleToggleAnnouncement(ann)}
+                                className="inline-flex items-center gap-1 rounded-md px-2.5 py-1.5 text-xs font-medium transition-colors border border-border text-muted-foreground hover:text-foreground hover:bg-secondary"
+                                title={ann.active ? "Disable" : "Enable"}
+                              >
+                                {ann.active ? <ToggleRight className="h-3.5 w-3.5 text-emerald-400" /> : <ToggleLeft className="h-3.5 w-3.5" />}
+                                {ann.active ? "Disable" : "Enable"}
+                              </button>
+                              <button
+                                onClick={() => handleEditAnnouncement(ann)}
+                                className="inline-flex items-center gap-1 rounded-md px-2.5 py-1.5 text-xs font-medium transition-colors border border-border text-muted-foreground hover:text-foreground hover:bg-secondary"
+                              >
+                                <Pencil className="h-3.5 w-3.5" />
+                                Edit
+                              </button>
+                              <button
+                                onClick={() => handleDeleteAnnouncement(ann.id)}
+                                className="inline-flex items-center gap-1 rounded-md bg-destructive/15 px-2.5 py-1.5 text-xs font-medium text-destructive hover:bg-destructive/25 transition-colors"
+                              >
+                                <Trash2 className="h-3.5 w-3.5" />
+                                Delete
+                              </button>
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
               </div>
             )}
 

@@ -31,7 +31,7 @@ service cloud.firestore {
     // Safe fields that users can update on their own profile
     function isSafeUserUpdate() {
       return request.resource.data.diff(resource.data).affectedKeys()
-        .hasOnly(['fullName', 'updatedAt']);
+        .hasOnly(['fullName', 'updatedAt', 'seenAnnouncements']);
     }
 
     // Fields that the referral system may update on any user document.
@@ -262,8 +262,17 @@ service cloud.firestore {
       allow update, delete: if false;
     }
 
+    // ============================================    // ANNOUNCEMENTS COLLECTION
     // ============================================
-    // ============================================
+    match /announcements/{announcementId} {
+      // Any authenticated user can read announcements
+      allow read: if isAuthenticated();
+
+      // Only admins can create, update, or delete announcements
+      allow create, update, delete: if isAdmin();
+    }
+
+    // ============================================    // ============================================
     match /{document=**} {
       allow read, write: if false;
     }
