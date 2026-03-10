@@ -81,10 +81,35 @@
   }
   body {
     @apply bg-background text-foreground font-sans antialiased;
+    /* Smooth colour crossfade whenever the theme class changes on <html> */
+    transition:
+      background-color 0.45s ease-in-out,
+      color            0.45s ease-in-out,
+      border-color     0.45s ease-in-out;
   }
   html {
     scroll-behavior: smooth;
   }
+}
+
+/* Fade-overlay applied to <html> during the theme switch.
+   A transparent backdrop fades to a thin dark/light wash then back,
+   giving the impression the whole page "breathes" into the new theme.
+   Only transform + opacity are animated — no layout/paint reflows. */
+html.theme-transitioning::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: 9998;
+  pointer-events: none;
+  background: hsl(var(--foreground) / 0.07);
+  animation: theme-fade-wash 0.45s ease-in-out forwards;
+}
+
+@keyframes theme-fade-wash {
+  0%   { opacity: 0;   }
+  40%  { opacity: 1;   }
+  100% { opacity: 0;   }
 }
 
 @layer utilities {

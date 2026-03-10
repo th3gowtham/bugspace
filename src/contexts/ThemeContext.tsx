@@ -42,8 +42,20 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     }
   }, [theme]);
 
-  const toggleTheme = () =>
-    setTheme((prev) => (prev === "dark" ? "light" : "dark"));
+  const toggleTheme = () => {
+    const root = document.documentElement;
+    // Add transitioning class to trigger the ::before fade-wash overlay
+    root.classList.add("theme-transitioning");
+    // Small delay lets the wash overlay begin its fade-in before the class swap
+    // so all colour variables change while the overlay is at peak opacity.
+    setTimeout(() => {
+      setTheme((prev) => (prev === "dark" ? "light" : "dark"));
+    }, 40);
+    // Remove the transitioning class once the animation (450 ms) completes
+    setTimeout(() => {
+      root.classList.remove("theme-transitioning");
+    }, 480);
+  };
 
   return (
     <ThemeContext.Provider value={{ theme, toggleTheme }}>
