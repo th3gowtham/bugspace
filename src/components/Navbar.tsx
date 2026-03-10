@@ -1,10 +1,11 @@
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import { Shield, Menu, X, LogOut, User, Settings, ChevronDown } from "lucide-react";
+import { Shield, Menu, X, LogOut, User, ChevronDown, Sun, Moon } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useState } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { signOut } from "@/lib/authService";
 import { getRedirectPath } from "@/lib/authService";
+import { useTheme } from "@/contexts/ThemeContext";
 
 export function Navbar() {
   const location = useLocation();
@@ -12,6 +13,7 @@ export function Navbar() {
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const { user, role, loading } = useAuth();
   const navigate = useNavigate();
+  const { theme, toggleTheme } = useTheme();
 
   const handleSignOut = async () => {
     await signOut();
@@ -111,6 +113,19 @@ export function Navbar() {
         </nav>
 
         <div className="hidden md:flex items-center gap-3">
+          {/* Theme toggle */}
+          <button
+            onClick={toggleTheme}
+            aria-label={theme === "dark" ? "Switch to light mode" : "Switch to dark mode"}
+            className="flex h-8 w-8 items-center justify-center rounded-full border border-border bg-card text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground"
+          >
+            {theme === "dark" ? (
+              <Sun className="h-4 w-4" />
+            ) : (
+              <Moon className="h-4 w-4" />
+            )}
+          </button>
+
           {loading ? (
             <div className="h-8 w-24 bg-muted animate-pulse rounded" />
           ) : user ? (
@@ -240,6 +255,19 @@ export function Navbar() {
               Exclusive Bugs
             </Link>
           )}
+          {/* Mobile theme toggle */}
+          <button
+            onClick={toggleTheme}
+            aria-label={theme === "dark" ? "Switch to light mode" : "Switch to dark mode"}
+            className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground"
+          >
+            {theme === "dark" ? (
+              <><Sun className="h-4 w-4" /> Light Mode</>
+            ) : (
+              <><Moon className="h-4 w-4" /> Dark Mode</>
+            )}
+          </button>
+
           <div className="pt-3 border-t border-border space-y-2">
             {user ? (
               <>

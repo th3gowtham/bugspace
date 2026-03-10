@@ -222,9 +222,9 @@ const Dashboard = () => {
           </div>
         </div>
 
-        <div className="flex gap-8">
+        <div className="flex gap-6">
           {/* Sidebar */}
-          <aside className="hidden md:block w-56 shrink-0 space-y-1">
+          <aside className="hidden md:block w-60 shrink-0 space-y-0.5">
             {tabs.map((tab) => (
               <button
                 key={tab.id}
@@ -276,7 +276,7 @@ const Dashboard = () => {
                 {bookmarksLoading ? (
                   <p className="text-sm text-muted-foreground py-16 text-center">Loading bookmarksâ€¦</p>
                 ) : bookmarked.length > 0 ? (
-                  <div className="grid gap-4 sm:grid-cols-2">
+                  <div className="grid gap-5 sm:grid-cols-2 xl:grid-cols-3">
                     {bookmarked.map((p) => (
                       <ProgramCard key={p.id} program={p} />
                     ))}
@@ -297,11 +297,11 @@ const Dashboard = () => {
                 {savedBugsLoading ? (
                   <p className="text-sm text-muted-foreground py-16 text-center">Loading saved bugs\u2026</p>
                 ) : savedBugs.length > 0 ? (
-                  <div className="grid gap-4 sm:grid-cols-2">
+                  <div className="grid gap-5 sm:grid-cols-2 xl:grid-cols-3">
                     {savedBugs.map((bug) => (
                       <div
                         key={bug.bugId}
-                        className="glass-card p-4 flex flex-col gap-2.5 cursor-pointer hover:border-primary/30 transition-colors"
+                        className="glass-card p-4 flex flex-col gap-2.5 cursor-pointer hover:border-primary/30"
                         onClick={() => navigate(`/exclusive-bugs/${bug.bugId}`)}
                       >
                         <div className="flex items-start justify-between gap-2">
