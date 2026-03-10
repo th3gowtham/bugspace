@@ -2,7 +2,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { ProtectedRoute, PublicOnlyRoute } from "@/components/auth/ProtectedRoute";
 import { onAuthStateChanged } from "firebase/auth";
@@ -30,47 +30,68 @@ import NotFound from "./pages/NotFound";
 const queryClient = new QueryClient();
 
 /**
- * Listens directly to Firebase Auth (not through AuthContext) so it fires
- * as soon as auth state is known — no multi-step loading chain involved.
- * Only shows the popup for researcher-role accounts ("user").
- * Fires at most once per uid per app session (ref guard).
+ * Checks for unseen announcements on every protected-page navigation,
+ * page refresh, and login — not only at login time.
+ *
+ * Two separate effects:
+ *  1. Auth effect  — tracks the current researcher uid.
+ *  2. Check effect — re-runs on every route change to fetch the latest
+ *     unseen announcement.  Uses an in-session dismissed-IDs ref so a
+ *     popup that was already acknowledged never re-appears, and a
+ *     `checking` flag prevents overlapping Firestore reads.
  */
 function AnnouncementWrapper() {
   const [uid, setUid] = useState<string | null>(null);
   const [announcement, setAnnouncement] = useState<Announcement | null>(null);
-  // Guard: only fetch once per uid per session even in React StrictMode
-  const fetchedForUid = useRef<string | null>(null);
+  const location = useLocation();
+  // In-session cache: IDs dismissed by the user this page session
+  const dismissedThisSession = useRef(new Set<string>());
+  // Prevent concurrent Firestore fetches
+  const checking = useRef(false);
+  // Mirror of announcement state as a ref so the check effect can read it
+  // without adding `announcement` to its dependency array (avoids re-fetching
+  // immediately after every dismiss).
+  const showingPopup = useRef(false);
 
+  useEffect(() => {
+    showingPopup.current = !!announcement;
+  }, [announcement]);
+
+  // Effect 1 — track auth state and set uid for researcher accounts only.
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (fbUser) => {
       if (!fbUser) {
-        // User signed out – reset everything so the next login can re-trigger
-        fetchedForUid.current = null;
         setUid(null);
         setAnnouncement(null);
+        dismissedThisSession.current.clear();
         return;
       }
-
-      // Already handled this uid in this session
-      if (fetchedForUid.current === fbUser.uid) return;
-      fetchedForUid.current = fbUser.uid;
-
       try {
-        // Only show popup for regular researchers (not admins or employers)
         const role = await detectUserRole(fbUser.email);
-        if (role !== "user") return;
-
-        setUid(fbUser.uid);
-
-        const ann = await getLatestUnseenAnnouncement(fbUser.uid);
-        if (ann) setAnnouncement(ann);
-      } catch (err) {
-        console.warn("[AnnouncementWrapper] failed to load announcement:", err);
+        setUid(role === "user" ? fbUser.uid : null);
+      } catch {
+        setUid(null);
       }
     });
-
     return () => unsubscribe();
   }, []);
+
+  // Effect 2 — check for unseen announcements on every route change.
+  // Triggers on: login, page refresh, dashboard load, any protected page load.
+  useEffect(() => {
+    if (!uid || showingPopup.current || checking.current) return;
+    checking.current = true;
+    getLatestUnseenAnnouncement(uid)
+      .then((ann) => {
+        if (ann && !dismissedThisSession.current.has(ann.id)) {
+          setAnnouncement(ann);
+        }
+      })
+      .catch((err) => console.warn("[AnnouncementWrapper]", err))
+      .finally(() => {
+        checking.current = false;
+      });
+  }, [uid, location.pathname]); // re-run on every page navigation
 
   if (!uid || !announcement) return null;
 
@@ -78,7 +99,10 @@ function AnnouncementWrapper() {
     <AnnouncementModal
       announcement={announcement}
       uid={uid}
-      onDismiss={() => setAnnouncement(null)}
+      onDismiss={() => {
+        dismissedThisSession.current.add(announcement.id);
+        setAnnouncement(null);
+      }}
     />
   );
 }
