@@ -69,7 +69,7 @@ service cloud.firestore {
     }
     
     // ============================================
-    // ADMINS COLLECTION - Manual only
+    // ADMINS COLLECTION - Manual only yesty
     // ============================================
     match /admins/{adminId} {
       // Authenticated users can read admin collection (for role detection by email)
