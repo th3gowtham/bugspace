@@ -1,8 +1,9 @@
 ﻿import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
 import { StatusBadge } from "@/components/Badges";
-import { Shield, Users, BarChart3, Star, Trash2, MinusCircle, Search, DollarSign, TrendingUp, GitBranch, Megaphone, Plus, Pencil, ToggleLeft, ToggleRight } from "lucide-react";
+import { Shield, Users, BarChart3, Star, Trash2, MinusCircle, Search, DollarSign, TrendingUp, GitBranch, Megaphone, Plus, Pencil, ToggleLeft, ToggleRight, Activity } from "lucide-react";
 import { collection, getDocs, query, where, orderBy } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import {
@@ -83,6 +84,7 @@ function SourceBadge({ source }: { source: string }) {
 
 const AdminPanel = () => {
   const { firebaseUser } = useAuth();
+  const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState("programs");
 
   // â”€â”€ dashboard stat counts â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
@@ -364,11 +366,12 @@ const AdminPanel = () => {
   ];
 
   const sidebarItems = [
-    { id: "programs",      label: "All Programs",  icon: Shield },
-    { id: "users",         label: "Users",          icon: Users },
-    { id: "analytics",    label: "Analytics",      icon: BarChart3 },
-    { id: "premium",      label: "Premium Users",  icon: Star },
-    { id: "announcements", label: "Announcements",  icon: Megaphone },
+    { id: "programs",           label: "All Programs",       icon: Shield,    href: undefined },
+    { id: "users",              label: "Users",              icon: Users,     href: undefined },
+    { id: "analytics",          label: "Analytics",          icon: BarChart3, href: undefined },
+    { id: "premium",            label: "Premium Users",      icon: Star,      href: undefined },
+    { id: "announcements",      label: "Announcements",      icon: Megaphone, href: undefined },
+    { id: "platform-analytics", label: "Platform Analytics", icon: Activity,  href: "/admin/analytics" },
   ];
 
   return (
@@ -395,7 +398,7 @@ const AdminPanel = () => {
             {sidebarItems.map((item) => (
               <button
                 key={item.id}
-                onClick={() => setActiveTab(item.id)}
+                onClick={() => item.href ? navigate(item.href) : setActiveTab(item.id)}
                 className={`w-full flex items-center gap-2 rounded-md px-3 py-2 text-sm font-medium transition-colors ${
                   activeTab === item.id ? "bg-primary/10 text-primary" : "text-muted-foreground hover:bg-secondary hover:text-foreground"
                 }`}

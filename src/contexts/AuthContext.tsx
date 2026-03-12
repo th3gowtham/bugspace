@@ -4,6 +4,7 @@ import { auth } from "@/lib/firebase";
 import { detectUserRole, getUserData } from "@/lib/authService";
 import { UserRole, AuthUser } from "@/types/auth";
 import { checkPremiumAccess } from "@/lib/premiumService";
+import { updateLastActive } from "@/lib/analyticsService";
 
 interface AuthContextType {
   user: AuthUser | null;
@@ -51,6 +52,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         // Detect role by checking if email exists in admin/employer collections
         const detectedRole = await detectUserRole(firebaseUser.email);
         setRole(detectedRole);
+
+        // Stamp lastActiveAt for regular users (login / page reload)
+        if (detectedRole === "user") {
+          updateLastActive(firebaseUser.uid).catch(() => {});
+        }
 
         // Check premium access
         const premium = await checkPremiumAccess(firebaseUser.uid);

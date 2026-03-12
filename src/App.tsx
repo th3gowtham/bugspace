@@ -3,12 +3,13 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
-import { AuthProvider } from "@/contexts/AuthContext";
+import { AuthProvider, useAuth } from "@/contexts/AuthContext";
 import { ThemeProvider } from "@/contexts/ThemeContext";
 import { ProtectedRoute, PublicOnlyRoute } from "@/components/auth/ProtectedRoute";
 import { onAuthStateChanged } from "firebase/auth";
 import { auth } from "@/lib/firebase";
 import { detectUserRole } from "@/lib/authService";
+import { trackPageVisit } from "@/lib/analyticsService";
 import { useEffect, useRef, useState } from "react";
 import { getLatestUnseenAnnouncement, type Announcement } from "@/lib/announcementService";
 import { AnnouncementModal } from "@/components/AnnouncementModal";
@@ -26,7 +27,39 @@ import ExclusiveBugDetail from "./pages/ExclusiveBugDetail";
 import ResearchNotes from "./pages/ResearchNotes";
 import EmployerDashboard from "./pages/EmployerDashboard";
 import AdminPanel from "./pages/AdminPanel";
+import AdminAnalytics from "./pages/AdminAnalytics";
 import NotFound from "./pages/NotFound";
+
+// ── Human-readable page names for analytics tracking ─────────────────────────
+function getPageName(pathname: string): string {
+  if (pathname === "/") return "Home";
+  if (pathname === "/browse") return "Browse Programs";
+  if (pathname === "/premium") return "Premium Programs";
+  if (pathname.startsWith("/program/")) return "Program Detail";
+  if (pathname === "/dashboard") return "Dashboard";
+  if (pathname === "/bounty-tracker") return "Bounty Tracker";
+  if (pathname.startsWith("/exclusive-bugs/")) return "Exclusive Bug Detail";
+  if (pathname === "/exclusive-bugs") return "Exclusive Bugs";
+  if (pathname === "/notes") return "Research Notes";
+  return pathname;
+}
+
+/**
+ * Tracks page visits for regular (researcher) users whenever they navigate.
+ * Runs inside BrowserRouter so it can use useLocation.
+ */
+function PageTracker() {
+  const { firebaseUser, role, loading } = useAuth();
+  const location = useLocation();
+
+  useEffect(() => {
+    if (loading || !firebaseUser || role !== "user") return;
+    const name = getPageName(location.pathname);
+    trackPageVisit(firebaseUser.uid, name).catch(() => {});
+  }, [location.pathname, firebaseUser, role, loading]);
+
+  return null;
+}
 
 const queryClient = new QueryClient();
 
@@ -118,6 +151,7 @@ const App = () => (
           <BrowserRouter>
             <div>
             <AnnouncementWrapper />
+            <PageTracker />
             <Routes>
               {/* Public routes */}
               <Route path="/" element={<Index />} />
@@ -192,6 +226,11 @@ const App = () => (
               <Route path="/admin" element={
                 <ProtectedRoute allowedRoles={["admin"]}>
                   <AdminPanel />
+                </ProtectedRoute>
+              } />
+              <Route path="/admin/analytics" element={
+                <ProtectedRoute allowedRoles={["admin"]}>
+                  <AdminAnalytics />
                 </ProtectedRoute>
               } />
               

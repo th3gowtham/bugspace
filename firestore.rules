@@ -31,7 +31,7 @@ service cloud.firestore {
     // Safe fields that users can update on their own profile
     function isSafeUserUpdate() {
       return request.resource.data.diff(resource.data).affectedKeys()
-        .hasOnly(['fullName', 'updatedAt', 'seenAnnouncements', 'bookmarkedBugs']);
+        .hasOnly(['fullName', 'updatedAt', 'seenAnnouncements', 'bookmarkedBugs', 'lastActiveAt']);
     }
 
     // Fields that the referral system may update on any user document.
@@ -259,6 +259,24 @@ service cloud.firestore {
         && request.resource.data.referredUid == request.auth.uid;
 
       // No client-side updates or deletes once created
+      allow update, delete: if false;
+    }
+
+    // ============================================
+    // ANALYTICS COLLECTION - Page visit tracking
+    // Fields: userId, page, timestamp
+    // ============================================
+    match /analytics/{visitId} {
+      // Only admins can read analytics data
+      allow read: if isAdmin();
+
+      // Authenticated users can log their own page visits
+      allow create: if isAuthenticated()
+        && request.resource.data.userId == request.auth.uid
+        && 'page' in request.resource.data
+        && 'timestamp' in request.resource.data;
+
+      // No client-side updates or deletes
       allow update, delete: if false;
     }
 
