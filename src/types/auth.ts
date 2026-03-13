@@ -11,6 +11,12 @@ export interface UserData {
   referralCode:  string;
   referralCount: number;
   referredBy:    string | null;
+  referredByPromoCode: string | null;
+  referralSource: string | null;
+  signupIP: string | null;
+  deviceFingerprint: string | null;
+  premiumStatus: boolean;
+  premiumPurchaseDate: Date | null;
   premiumUntil:  Date | null;
 }
 

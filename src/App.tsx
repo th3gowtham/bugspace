@@ -6,6 +6,7 @@ import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
 import { AuthProvider, useAuth } from "@/contexts/AuthContext";
 import { ThemeProvider } from "@/contexts/ThemeContext";
 import { ProtectedRoute, PublicOnlyRoute } from "@/components/auth/ProtectedRoute";
+import { PromoterRoute } from "@/components/auth/PromoterRoute";
 import { onAuthStateChanged } from "firebase/auth";
 import { auth } from "@/lib/firebase";
 import { detectUserRole } from "@/lib/authService";
@@ -28,6 +29,9 @@ import ResearchNotes from "./pages/ResearchNotes";
 import EmployerDashboard from "./pages/EmployerDashboard";
 import AdminPanel from "./pages/AdminPanel";
 import AdminAnalytics from "./pages/AdminAnalytics";
+import AdminPromoters from "./pages/AdminPromoters";
+import PromoterLogin from "./pages/PromoterLogin";
+import PromoterDashboard from "./pages/PromoterDashboard";
 import NotFound from "./pages/NotFound";
 
 // ── Human-readable page names for analytics tracking ─────────────────────────
@@ -181,6 +185,14 @@ const App = () => (
                 </PublicOnlyRoute>
               } />
               <Route path="/forgot-password" element={<ForgotPassword />} />
+
+              {/* Promoter auth and dashboard routes */}
+              <Route path="/promoter/login" element={<PromoterLogin />} />
+              <Route path="/promoter/dashboard" element={
+                <PromoterRoute>
+                  <PromoterDashboard />
+                </PromoterRoute>
+              } />
               
               {/* Protected routes - require authentication */}
               <Route path="/dashboard" element={
@@ -231,6 +243,11 @@ const App = () => (
               <Route path="/admin/analytics" element={
                 <ProtectedRoute allowedRoles={["admin"]}>
                   <AdminAnalytics />
+                </ProtectedRoute>
+              } />
+              <Route path="/admin/promoters" element={
+                <ProtectedRoute allowedRoles={["admin"]}>
+                  <AdminPromoters />
                 </ProtectedRoute>
               } />
               

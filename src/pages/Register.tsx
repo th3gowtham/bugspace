@@ -3,6 +3,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { Shield, AlertCircle, Loader2 } from "lucide-react";
 import { signInWithGoogle, getRedirectPath } from "@/lib/authService";
 import { storeRefCodeFromUrl } from "@/lib/referralService";
+import { primePromoterSignupContext, storePromoCodeFromUrl } from "@/lib/promoterService";
 import { useAuth } from "@/contexts/AuthContext";
 
 const Register = () => {
@@ -11,10 +12,11 @@ const Register = () => {
   const navigate = useNavigate();
   const { user, role } = useAuth();
 
-  // Capture ?ref= query param and persist to localStorage so it survives the
-  // OAuth redirect or any navigation before the signup completes.
+  // Capture referral query params and persist them so they survive OAuth redirect.
   useEffect(() => {
     storeRefCodeFromUrl();
+    storePromoCodeFromUrl();
+    void primePromoterSignupContext();
   }, []);
 
   // Redirect if already logged in
@@ -84,6 +86,11 @@ const Register = () => {
         <p className="text-center text-sm text-muted-foreground mt-4">
           Already have an account?{" "}
           <Link to="/login" className="text-primary hover:underline font-medium">Sign In</Link>
+        </p>
+
+        <p className="text-center text-xs text-muted-foreground mt-2">
+          Promoter account?{" "}
+          <Link to="/promoter/login" className="text-primary hover:underline">Use promoter portal</Link>
         </p>
       </div>
     </div>

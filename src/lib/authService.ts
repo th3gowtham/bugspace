@@ -12,12 +12,22 @@ import { doc, setDoc, getDoc, serverTimestamp, collection, query, where, getDocs
 import { auth, db } from "./firebase";
 import { UserRole, UserData, AdminData, EmployerData } from "@/types/auth";
 import { generateReferralCode, processReferralOnSignup } from "./referralService";
+import { processPromoterReferralOnSignup } from "./promoterService";
 
 // Email verification settings
 const actionCodeSettings: ActionCodeSettings = {
   url: window.location.origin + '/login',
   handleCodeInApp: true,
 };
+
+function logReferralPipelineResults(results: PromiseSettledResult<void>[]): void {
+  const labels = ["user-referral", "promoter-referral"];
+  results.forEach((result, index) => {
+    if (result.status === "rejected") {
+      console.warn(`[ReferralPipeline] ${labels[index]} failed`, result.reason);
+    }
+  });
+}
 
 // Role detection by checking if email exists in admin/employer collections
 export async function detectUserRole(email: string | null): Promise<UserRole> {
@@ -93,6 +103,12 @@ export async function createUserDocument(
     referralCode:  generateReferralCode(),
     referralCount: 0,
     referredBy:    null,
+    referredByPromoCode: null,
+    referralSource: null,
+    signupIP: null,
+    deviceFingerprint: null,
+    premiumStatus: false,
+    premiumPurchaseDate: null,
     premiumUntil:  null,
   });
 }
@@ -112,7 +128,11 @@ export async function signUpWithEmail(
 
     // Process referral (reads code from localStorage, awards premium if tier reached)
     if (user.email) {
-      await processReferralOnSignup(user.uid, user.email);
+      const referralResults = await Promise.allSettled([
+        processReferralOnSignup(user.uid, user.email),
+        processPromoterReferralOnSignup(user.uid, user.email),
+      ]);
+      logReferralPipelineResults(referralResults);
     }
 
     return { success: true };
@@ -154,7 +174,11 @@ export async function signInWithGoogle(): Promise<{ success: boolean; role?: Use
         "google"
       );
       if (user.email) {
-        await processReferralOnSignup(user.uid, user.email);
+        const referralResults = await Promise.allSettled([
+          processReferralOnSignup(user.uid, user.email),
+          processPromoterReferralOnSignup(user.uid, user.email),
+        ]);
+        logReferralPipelineResults(referralResults);
       }
     }
 

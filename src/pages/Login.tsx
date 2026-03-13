@@ -74,6 +74,11 @@ const Login = () => {
             {" "}and{" "}
             <span className="text-primary cursor-pointer hover:underline">Privacy Policy</span>.
           </p>
+
+          <p className="text-center text-xs text-muted-foreground">
+            Promoter account?{" "}
+            <Link to="/promoter/login" className="text-primary hover:underline">Sign in to promoter portal</Link>
+          </p>
         </div>
       </div>
     </div>

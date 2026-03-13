@@ -40,7 +40,22 @@ service cloud.firestore {
     // intentionally restricted to these fields only.
     function isReferralUpdate() {
       return request.resource.data.diff(resource.data).affectedKeys()
-        .hasOnly(['referralCode', 'referralCount', 'referredBy', 'premiumUntil']);
+        .hasOnly([
+          'referralCode',
+          'referralCount',
+          'referredBy',
+          'premiumUntil',
+          'premiumSource',
+          'premiumGrantedAt',
+          'referralRewardApplied',
+          'referralTierGranted',
+          'referredByPromoCode',
+          'referralSource',
+          'signupIP',
+          'deviceFingerprint',
+          'premiumStatus',
+          'premiumPurchaseDate'
+        ]);
     }
 
     // ============================================
@@ -260,6 +275,33 @@ service cloud.firestore {
 
       // No client-side updates or deletes once created
       allow update, delete: if false;
+    }
+
+    // ============================================
+    // PROMOTERS COLLECTION
+    // NOTE: Promoter login currently uses custom client-side auth and requires
+    // unauthenticated reads. Move this validation to a trusted backend for
+    // production deployments.
+    // ============================================
+    match /promoters/{promoterId} {
+      // Referral processing runs after user signup while authenticated,
+      // so promoter reads must allow authenticated users as well.
+      allow read: if isAdmin() || isAuthenticated() || request.auth == null;
+      allow create, update, delete: if isAdmin();
+    }
+
+    // ============================================
+    // PROMOTER REFERRALS COLLECTION
+    // ============================================
+    match /promoterReferrals/{referralId} {
+      allow read: if isAdmin() || request.auth == null;
+
+      allow create: if isAuthenticated()
+        && request.resource.data.userId == request.auth.uid;
+
+      allow update: if isAdmin() || isAuthenticated();
+
+      allow delete: if false;
     }
 
     // ============================================

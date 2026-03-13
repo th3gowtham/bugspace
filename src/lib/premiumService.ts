@@ -12,6 +12,7 @@ import {
   Timestamp,
 } from "firebase/firestore";
 import { db } from "./firebase";
+import { markPromoterPremiumConversion } from "./promoterService";
 
 export type PremiumSource = "paid" | "referral" | "admin-granted";
 
@@ -76,7 +77,8 @@ export async function assignPremiumUser(
   startDate: Date,
   endDate: Date,
   adminUid: string,
-  source: PremiumSource = "admin-granted"
+  source: PremiumSource = "admin-granted",
+  premiumPrice?: number,
 ): Promise<void> {
   await setDoc(doc(db, "premiumUsers", uid), {
     userId: uid,
@@ -88,6 +90,17 @@ export async function assignPremiumUser(
     source,
     createdAt: serverTimestamp(),
   });
+
+  if (source === "paid") {
+    await updateDoc(doc(db, "users", uid), {
+      premiumStatus: true,
+      premiumPurchaseDate: Timestamp.fromDate(startDate),
+    }).catch(() => {});
+
+    if (typeof premiumPrice === "number" && premiumPrice > 0) {
+      await markPromoterPremiumConversion(uid, premiumPrice, startDate).catch(() => {});
+    }
+  }
 }
 
 // ─── Admin: update endDate or isActive ───────────────────────────────────────

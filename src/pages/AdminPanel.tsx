@@ -371,6 +371,7 @@ const AdminPanel = () => {
     { id: "analytics",          label: "Analytics",          icon: BarChart3, href: undefined },
     { id: "premium",            label: "Premium Users",      icon: Star,      href: undefined },
     { id: "announcements",      label: "Announcements",      icon: Megaphone, href: undefined },
+    { id: "promoters",          label: "Promoter Analytics", icon: Users,     href: "/admin/promoters" },
     { id: "platform-analytics", label: "Platform Analytics", icon: Activity,  href: "/admin/analytics" },
   ];
 
