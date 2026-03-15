@@ -65,21 +65,21 @@ const EmployerDashboard = () => {
   const [activeTab, setActiveTab] = useState("programs");
 
   // ── Exclusive Bugs state ────────────────────────────────────────────────────
-  const [myBugs,          setMyBugs]          = useState<ExclusiveBug[]>([]);
-  const [categories,      setCategories]      = useState<ExclusiveBugCategory[]>([]);
-  const [bugsLoading,     setBugsLoading]     = useState(false);
-  const [bugForm,         setBugForm]         = useState<ExclusiveBugInput>(blankBugForm());
-  const [editingBug,      setEditingBug]      = useState<ExclusiveBug | null>(null);
-  const [showBugModal,    setShowBugModal]    = useState(false);
-  const [bugSubmitting,   setBugSubmitting]   = useState(false);
+  const [myBugs, setMyBugs] = useState<ExclusiveBug[]>([]);
+  const [categories, setCategories] = useState<ExclusiveBugCategory[]>([]);
+  const [bugsLoading, setBugsLoading] = useState(false);
+  const [bugForm, setBugForm] = useState<ExclusiveBugInput>(blankBugForm());
+  const [editingBug, setEditingBug] = useState<ExclusiveBug | null>(null);
+  const [showBugModal, setShowBugModal] = useState(false);
+  const [bugSubmitting, setBugSubmitting] = useState(false);
   const [deleteBugTarget, setDeleteBugTarget] = useState<ExclusiveBug | null>(null);
-  const [bugSearch,       setBugSearch]       = useState("");
-  const [filterBugCat,    setFilterBugCat]    = useState("");
-  const [newCatName,      setNewCatName]      = useState("");
-  const [addingCat,       setAddingCat]       = useState(false);
-  const [catSubmitting,   setCatSubmitting]   = useState(false);
-  const [showCatManager,  setShowCatManager]  = useState(false);
-  const [categorySearch,  setCategorySearch]  = useState("");
+  const [bugSearch, setBugSearch] = useState("");
+  const [filterBugCat, setFilterBugCat] = useState("");
+  const [newCatName, setNewCatName] = useState("");
+  const [addingCat, setAddingCat] = useState(false);
+  const [catSubmitting, setCatSubmitting] = useState(false);
+  const [showCatManager, setShowCatManager] = useState(false);
+  const [categorySearch, setCategorySearch] = useState("");
   const [catDropdownOpen, setCatDropdownOpen] = useState(false);
   const [formStep, setFormStep] = useState(0);
   const [editingProgram, setEditingProgram] = useState<string | null>(null);   // display name
@@ -91,13 +91,13 @@ const EmployerDashboard = () => {
     setForm((prev) => ({ ...prev, [key]: val }));
 
   // Programs list
-  const [myPrograms, setMyPrograms]         = useState<ProgramData[]>([]);
+  const [myPrograms, setMyPrograms] = useState<ProgramData[]>([]);
   const [programsLoading, setProgramsLoading] = useState(false);
-  const [programFilter, setProgramFilter]   = useState<"all" | "public" | "premium">("all");
-  const [programSearch, setProgramSearch]   = useState("");
+  const [programFilter, setProgramFilter] = useState<"all" | "public" | "premium">("all");
+  const [programSearch, setProgramSearch] = useState("");
 
   // Deletion state
-  const [deletingId, setDeletingId]         = useState<string | null>(null);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
   const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
 
   // Submission state
@@ -243,15 +243,15 @@ const EmployerDashboard = () => {
       const raw = await getProgram(progId);
       if (raw) {
         setForm({
-          programName:     raw.programName,
-          companyName:     raw.companyName,
-          platformType:    raw.platformType,
-          bountyRange:     raw.bountyRange ?? "",
-          programUrl:      raw.programUrl ?? "",
-          scopeRaw:        Array.isArray(raw.scope) ? raw.scope.join("\n") : "",
-          programRules:    raw.programRules,
+          programName: raw.programName,
+          companyName: raw.companyName,
+          platformType: raw.platformType,
+          bountyRange: raw.bountyRange ?? "",
+          programUrl: raw.programUrl ?? "",
+          scopeRaw: Array.isArray(raw.scope) ? raw.scope.join("\n") : "",
+          programRules: raw.programRules,
           disclosureEmail: raw.disclosureEmail,
-          status:          raw.status ?? "active",
+          status: raw.status ?? "active",
         });
         setIsPremiumProgram(raw.isPremium ?? false);
       }
@@ -303,20 +303,20 @@ const EmployerDashboard = () => {
   };
 
   const handleSubmit = async () => {
-    if (!firebaseUser)        { toast.error("You must be logged in."); return; }
-    if (!firebaseUser.email)  { toast.error("Your account has no email address."); return; }
+    if (!firebaseUser) { toast.error("You must be logged in."); return; }
+    if (!firebaseUser.email) { toast.error("Your account has no email address."); return; }
     const scope = form.scopeRaw.split("\n").map((s) => s.trim()).filter(Boolean);
     const payload = {
-      programName:     form.programName,
-      companyName:     form.companyName,
-      platformType:    form.platformType,
-      bountyRange:     form.bountyRange,
-      programUrl:      form.programUrl,
+      programName: form.programName,
+      companyName: form.companyName,
+      platformType: form.platformType,
+      bountyRange: form.bountyRange,
+      programUrl: form.programUrl,
       scope,
-      programRules:    form.programRules,
+      programRules: form.programRules,
       disclosureEmail: form.disclosureEmail,
-      isPremium:       isPremiumProgram,
-      status:          form.status,
+      isPremium: isPremiumProgram,
+      status: form.status,
     };
     const err = validateProgramForm(payload);
     if (err) { toast.error(err); return; }
@@ -348,16 +348,21 @@ const EmployerDashboard = () => {
   };
 
   const sidebarItems = [
-    { id: "programs",      label: "My Programs",          icon: FileText },
-    { id: "add",           label: "Add Program",           icon: Plus },
+    { id: "programs", label: "My Programs", icon: FileText },
+    { id: "add", label: "Add Program", icon: Plus },
     { id: "exclusive-bugs", label: "Exclusive Bugs Manager", icon: Bug },
   ];
 
   return (
-    <div className="min-h-screen flex flex-col bg-background">
+    <div className="min-h-screen flex flex-col bg-background selection:bg-primary/20 relative overflow-hidden">
+      {/* Background decorations */}
+      <div className="absolute inset-0 bg-grid-white/[0.02] bg-[size:32px] pointer-events-none" />
+      <div className="absolute top-1/4 left-[-10%] w-[500px] h-[500px] bg-primary/10 rounded-full blur-[120px] pointer-events-none opacity-50" />
+      <div className="absolute bottom-[-10%] right-[-5%] w-[400px] h-[400px] bg-amber-500/10 rounded-full blur-[120px] pointer-events-none opacity-40" />
+
       <Navbar />
-      <div className="container flex-1 py-8">
-        <h1 className="text-2xl font-bold text-foreground mb-6">Employer Dashboard</h1>
+      <div className="container flex-1 py-10 relative z-10 animate-in fade-in zoom-in-95 duration-700">
+        <h1 className="text-3xl font-extrabold text-foreground mb-8 tracking-tight">Employer Dashboard</h1>
 
         <div className="flex gap-8">
           <aside className="hidden md:block w-56 shrink-0 space-y-1">
@@ -365,11 +370,10 @@ const EmployerDashboard = () => {
               <button
                 key={item.id}
                 onClick={() => { item.id === "add" ? handleAddNew() : setActiveTab(item.id); }}
-                className={`w-full flex items-center gap-2 rounded-md px-3 py-2 text-sm font-medium transition-colors ${
-                  activeTab === item.id ? "bg-primary/10 text-primary" : "text-muted-foreground hover:bg-secondary hover:text-foreground"
-                }`}
+                className={`w-full flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-bold transition-all ${activeTab === item.id ? "bg-primary/15 text-primary shadow-sm" : "text-muted-foreground hover:bg-secondary/60 hover:text-foreground"
+                  }`}
               >
-                <item.icon className="h-4 w-4" />
+                <item.icon className="h-4 w-4 shrink-0" />
                 {item.label}
               </button>
             ))}
@@ -379,30 +383,29 @@ const EmployerDashboard = () => {
             {activeTab === "programs" && (
               <div className="space-y-3">
                 {/* Search */}
-                <div className="relative">
-                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <div className="relative group">
+                  <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground group-focus-within:text-primary transition-colors pointer-events-none" />
                   <input
                     type="text"
                     placeholder="Search your programs…"
                     value={programSearch}
                     onChange={(e) => setProgramSearch(e.target.value)}
-                    className="w-full rounded-md border border-input bg-background py-2 pl-9 pr-4 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+                    className="w-full rounded-xl border border-input bg-background/50 py-3 pl-11 pr-4 text-sm font-medium text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 transition-colors"
                   />
                 </div>
 
                 {/* Sub-filter tabs */}
-                <div className="flex gap-2 mb-4">
+                <div className="flex gap-2 mb-6">
                   {(["all", "public", "premium"] as const).map((f) => (
                     <button
                       key={f}
                       onClick={() => setProgramFilter(f)}
-                      className={`inline-flex items-center gap-1.5 rounded-md px-3 py-1.5 text-xs font-medium transition-colors ${
-                        programFilter === f
-                          ? "bg-primary text-primary-foreground"
-                          : "border border-border text-muted-foreground hover:bg-secondary"
-                      }`}
+                      className={`inline-flex items-center gap-1.5 rounded-xl px-4 py-2 text-xs font-bold transition-all shadow-sm ${programFilter === f
+                        ? "bg-primary text-primary-foreground hover:bg-primary/90"
+                        : "border border-border/60 bg-card text-muted-foreground hover:bg-secondary hover:text-foreground"
+                        }`}
                     >
-                      {f === "premium" && <Star className="h-3 w-3" />}
+                      {f === "premium" && <Star className="h-4 w-4" />}
                       {f === "all" ? "All Programs" : f === "public" ? "Public" : "Premium"}
                     </button>
                   ))}
@@ -420,7 +423,7 @@ const EmployerDashboard = () => {
 
                 {myPrograms
                   .filter((p) => {
-                    if (programFilter === "public")  return !p.isPremium;
+                    if (programFilter === "public") return !p.isPremium;
                     if (programFilter === "premium") return !!p.isPremium;
                     return true;
                   })
@@ -430,61 +433,62 @@ const EmployerDashboard = () => {
                     return p.name.toLowerCase().includes(q) || p.company.toLowerCase().includes(q);
                   })
                   .map((prog) => (
-                  <div key={prog.id} className="glass-card p-5 flex items-center justify-between">
-                    <div>
-                      <div className="flex items-center gap-2">
-                        <p className="font-medium text-foreground">{prog.name}</p>
-                        <StatusBadge status={prog.status} />
-                        {prog.isPremium && (
-                          <span className="inline-flex items-center gap-1 rounded-full bg-amber-500/15 px-2 py-0.5 text-xs font-medium text-amber-500">
-                            <Star className="h-2.5 w-2.5" />
-                            Premium
-                          </span>
+                    <div key={prog.id} className="glass-card p-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4 shadow-sm hover:shadow-md transition-shadow relative overflow-hidden group">
+                      <div className="absolute top-0 right-0 w-24 h-24 bg-primary/5 rounded-full blur-xl -mr-12 -mt-12 pointer-events-none" />
+                      <div className="relative z-10">
+                        <div className="flex items-center gap-3">
+                          <p className="font-bold text-foreground text-lg tracking-tight">{prog.name}</p>
+                          <StatusBadge status={prog.status} />
+                          {prog.isPremium && (
+                            <span className="inline-flex items-center gap-1 rounded-full bg-amber-500/15 px-2.5 py-0.5 text-xs font-bold text-amber-500">
+                              <Star className="h-3 w-3" />
+                              Premium
+                            </span>
+                          )}
+                        </div>
+                        <p className="text-sm font-medium text-muted-foreground mt-1.5">
+                          {prog.updatedDaysAgo === 0
+                            ? "Submitted today"
+                            : `Submitted ${prog.updatedDaysAgo}d ago`}
+                        </p>
+                      </div>
+                      <div className="flex items-center gap-2 relative z-10">
+                        <button
+                          onClick={() => handleEdit(prog.id, prog.name)}
+                          className="text-muted-foreground hover:text-foreground transition-colors p-1"
+                          title="Edit"
+                        >
+                          <Edit3 className="h-4 w-4" />
+                        </button>
+                        {confirmDeleteId === prog.id ? (
+                          <div className="flex items-center gap-1.5">
+                            <span className="text-xs text-muted-foreground">Delete?</span>
+                            <button
+                              onClick={() => handleDelete(prog.id)}
+                              disabled={deletingId === prog.id}
+                              className="text-xs font-medium text-destructive hover:underline disabled:opacity-60"
+                            >
+                              {deletingId === prog.id ? "Deleting…" : "Yes"}
+                            </button>
+                            <button
+                              onClick={() => setConfirmDeleteId(null)}
+                              className="text-xs font-medium text-muted-foreground hover:underline"
+                            >
+                              No
+                            </button>
+                          </div>
+                        ) : (
+                          <button
+                            onClick={() => setConfirmDeleteId(prog.id)}
+                            className="text-muted-foreground hover:text-destructive transition-colors p-1"
+                            title="Delete"
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </button>
                         )}
                       </div>
-                      <p className="text-sm text-muted-foreground mt-1">
-                        {prog.updatedDaysAgo === 0
-                          ? "Submitted today"
-                          : `Submitted ${prog.updatedDaysAgo}d ago`}
-                      </p>
                     </div>
-                    <div className="flex items-center gap-2">
-                      <button
-                        onClick={() => handleEdit(prog.id, prog.name)}
-                        className="text-muted-foreground hover:text-foreground transition-colors p-1"
-                        title="Edit"
-                      >
-                        <Edit3 className="h-4 w-4" />
-                      </button>
-                      {confirmDeleteId === prog.id ? (
-                        <div className="flex items-center gap-1.5">
-                          <span className="text-xs text-muted-foreground">Delete?</span>
-                          <button
-                            onClick={() => handleDelete(prog.id)}
-                            disabled={deletingId === prog.id}
-                            className="text-xs font-medium text-destructive hover:underline disabled:opacity-60"
-                          >
-                            {deletingId === prog.id ? "Deleting…" : "Yes"}
-                          </button>
-                          <button
-                            onClick={() => setConfirmDeleteId(null)}
-                            className="text-xs font-medium text-muted-foreground hover:underline"
-                          >
-                            No
-                          </button>
-                        </div>
-                      ) : (
-                        <button
-                          onClick={() => setConfirmDeleteId(prog.id)}
-                          className="text-muted-foreground hover:text-destructive transition-colors p-1"
-                          title="Delete"
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </button>
-                      )}
-                    </div>
-                  </div>
-                ))}
+                  ))}
 
                 <div className="text-center py-8">
                   <p className="text-sm text-muted-foreground">
@@ -618,12 +622,12 @@ const EmployerDashboard = () => {
                     <div className="overflow-x-auto">
                       <table className="w-full text-sm">
                         <thead>
-                          <tr className="border-b border-border bg-secondary/40">
-                            <th className="px-5 py-3 text-xs font-medium text-muted-foreground text-left">Bug Title</th>
-                            <th className="px-4 py-3 text-xs font-medium text-muted-foreground text-left">Category</th>
-                            <th className="px-4 py-3 text-xs font-medium text-muted-foreground text-right">Bounty</th>
-                            <th className="px-4 py-3 text-xs font-medium text-muted-foreground text-left">Created</th>
-                            <th className="px-4 py-3 text-xs font-medium text-muted-foreground text-left">Actions</th>
+                          <tr className="border-b border-border/60 bg-secondary/30">
+                            <th className="px-5 py-4 text-xs font-extrabold text-foreground uppercase tracking-widest text-left">Bug Title</th>
+                            <th className="px-4 py-4 text-xs font-extrabold text-foreground uppercase tracking-widest text-left">Category</th>
+                            <th className="px-4 py-4 text-xs font-extrabold text-foreground uppercase tracking-widest text-right">Bounty</th>
+                            <th className="px-4 py-4 text-xs font-extrabold text-foreground uppercase tracking-widest text-left">Created</th>
+                            <th className="px-4 py-4 text-xs font-extrabold text-foreground uppercase tracking-widest text-left">Actions</th>
                           </tr>
                         </thead>
                         <tbody className="divide-y divide-border">
@@ -681,9 +685,8 @@ const EmployerDashboard = () => {
                 <div className="flex items-center gap-2 mb-8">
                   {steps.map((step, i) => (
                     <div key={step} className="flex items-center gap-2">
-                      <div className={`h-7 w-7 rounded-full flex items-center justify-center text-xs font-medium ${
-                        i <= formStep ? "bg-primary text-primary-foreground" : "bg-secondary text-muted-foreground"
-                      }`}>
+                      <div className={`h-7 w-7 rounded-full flex items-center justify-center text-xs font-medium ${i <= formStep ? "bg-primary text-primary-foreground" : "bg-secondary text-muted-foreground"
+                        }`}>
                         {i + 1}
                       </div>
                       <span className={`text-sm ${i <= formStep ? "text-foreground" : "text-muted-foreground"}`}>{step}</span>
@@ -692,182 +695,184 @@ const EmployerDashboard = () => {
                   ))}
                 </div>
 
-                <div className="glass-card p-6 space-y-4">
-                  {formStep === 0 && (
-                    <>
-                      <FormField
-                        label="Program Name"
-                        placeholder="e.g. Acme Security"
-                        value={form.programName}
-                        onChange={(v) => setField("programName", v)}
-                      />
-                      <FormField
-                        label="Company Name"
-                        placeholder="e.g. Acme Inc."
-                        value={form.companyName}
-                        onChange={(v) => setField("companyName", v)}
-                      />
-                      <div>
-                        <label className="block text-sm font-medium text-foreground mb-1.5">Platform Type <span className="text-muted-foreground font-normal">(optional)</span></label>
-                        <select
-                          value={form.platformType}
-                          onChange={(e) => setField("platformType", e.target.value)}
-                          className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
-                        >
-                          <option value="self-hosted">Self-Hosted</option>
-                          <option value="hackerone">HackerOne</option>
-                          <option value="bugcrowd">Bugcrowd</option>
-                          <option value="intigriti">Intigriti</option>
-                        </select>
-                      </div>
-                      <FormField
-                        label="Bounty Range (optional)"
-                        placeholder="e.g. $500 – $10,000"
-                        value={form.bountyRange}
-                        onChange={(v) => setField("bountyRange", v)}
-                      />
-                      <FormField
-                        label="Program URL (optional)"
-                        placeholder="https://company.com/security"
-                        value={form.programUrl}
-                        onChange={(v) => setField("programUrl", v)}
-                      />
-                      <div>
-                        <label className="block text-sm font-medium text-foreground mb-1.5">Status <span className="text-muted-foreground font-normal">(optional)</span></label>
-                        <select
-                          value={form.status}
-                          onChange={(e) => setField("status", e.target.value)}
-                          className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
-                        >
-                          <option value="active">Active</option>
-                          <option value="paused">Paused</option>
-                          <option value="closed">Closed</option>
-                          <option value="inactive">Inactive (hidden from researchers)</option>
-                        </select>
-                      </div>
-                    </>
-                  )}
+                <div className="glass-card p-6 md:p-8 space-y-6 relative overflow-hidden shadow-xl">
+                  <div className="absolute top-0 right-0 w-32 h-32 bg-primary/10 rounded-full blur-2xl -mr-16 -mt-16 pointer-events-none" />
 
-                  {formStep === 1 && (
-                    <>
-                      <div>
-                        <label className="block text-sm font-medium text-foreground mb-1.5">Scope <span className="text-muted-foreground font-normal">(optional)</span></label>
-                        <textarea
-                          rows={4}
-                          placeholder="List in-scope domains, one per line..."
-                          value={form.scopeRaw}
-                          onChange={(e) => setField("scopeRaw", e.target.value)}
-                          className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring resize-none"
+                  <div className="relative z-10 space-y-5">
+                    {formStep === 0 && (
+                      <>
+                        <FormField
+                          label="Program Name"
+                          placeholder="e.g. Acme Security"
+                          value={form.programName}
+                          onChange={(v) => setField("programName", v)}
                         />
-                      </div>
-                      <div>
-                        <label className="block text-sm font-medium text-foreground mb-1.5">Rules Summary <span className="text-muted-foreground font-normal">(optional)</span></label>
-                        <textarea
-                          rows={3}
-                          placeholder="Brief rules and guidelines..."
-                          value={form.programRules}
-                          onChange={(e) => setField("programRules", e.target.value)}
-                          className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring resize-none"
+                        <FormField
+                          label="Company Name"
+                          placeholder="e.g. Acme Inc."
+                          value={form.companyName}
+                          onChange={(v) => setField("companyName", v)}
                         />
-                      </div>
-                      <FormField
-                        label="Disclosure Email (optional)"
-                        placeholder="security@company.com"
-                        type="email"
-                        value={form.disclosureEmail}
-                        onChange={(v) => setField("disclosureEmail", v)}
-                      />
-                    </>
-                  )}
-
-                  {formStep === 2 && (
-                    <div className="space-y-5">
-                      {/* Premium toggle */}
-                      <div className="flex items-center justify-between rounded-md border border-border px-4 py-3">
                         <div>
-                          <p className="text-sm font-medium text-foreground">Premium Program</p>
-                          <p className="text-xs text-muted-foreground mt-0.5">Visible to paid subscribers only</p>
+                          <label className="block text-sm font-medium text-foreground mb-1.5">Platform Type <span className="text-muted-foreground font-normal">(optional)</span></label>
+                          <select
+                            value={form.platformType}
+                            onChange={(e) => setField("platformType", e.target.value)}
+                            className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+                          >
+                            <option value="self-hosted">Self-Hosted</option>
+                            <option value="hackerone">HackerOne</option>
+                            <option value="bugcrowd">Bugcrowd</option>
+                            <option value="intigriti">Intigriti</option>
+                          </select>
                         </div>
-                        <button
-                          type="button"
-                          role="switch"
-                          aria-checked={isPremiumProgram}
-                          onClick={() => setIsPremiumProgram((v) => !v)}
-                          className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors focus:outline-none ${
-                            isPremiumProgram ? "bg-amber-500" : "bg-secondary"
-                          }`}
-                        >
-                          <span
-                            className={`pointer-events-none inline-block h-5 w-5 rounded-full bg-white shadow transition-transform ${
-                              isPremiumProgram ? "translate-x-5" : "translate-x-0"
-                            }`}
+                        <FormField
+                          label="Bounty Range (optional)"
+                          placeholder="e.g. $500 – $10,000"
+                          value={form.bountyRange}
+                          onChange={(v) => setField("bountyRange", v)}
+                        />
+                        <FormField
+                          label="Program URL (optional)"
+                          placeholder="https://company.com/security"
+                          value={form.programUrl}
+                          onChange={(v) => setField("programUrl", v)}
+                        />
+                        <div>
+                          <label className="block text-sm font-medium text-foreground mb-1.5">Status <span className="text-muted-foreground font-normal">(optional)</span></label>
+                          <select
+                            value={form.status}
+                            onChange={(e) => setField("status", e.target.value)}
+                            className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+                          >
+                            <option value="active">Active</option>
+                            <option value="paused">Paused</option>
+                            <option value="closed">Closed</option>
+                            <option value="inactive">Inactive (hidden from researchers)</option>
+                          </select>
+                        </div>
+                      </>
+                    )}
+
+                    {formStep === 1 && (
+                      <>
+                        <div>
+                          <label className="block text-sm font-medium text-foreground mb-1.5">Scope <span className="text-muted-foreground font-normal">(optional)</span></label>
+                          <textarea
+                            rows={4}
+                            placeholder="List in-scope domains, one per line..."
+                            value={form.scopeRaw}
+                            onChange={(e) => setField("scopeRaw", e.target.value)}
+                            className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring resize-none"
                           />
-                        </button>
-                      </div>
-
-                      <div className="text-center py-6 space-y-3">
-                        <ClipboardList className="h-10 w-10 text-primary mx-auto" />
-                        <h3 className="text-lg font-semibold text-foreground">Ready to Submit</h3>
-                        <p className="text-sm text-muted-foreground">Review your program details and submit for admin approval.</p>
-                      </div>
-
-                      {/* Delete button (edit mode only) */}
-                      {editingProgramId && (
-                        <div className="border-t border-border pt-4">
-                          {confirmDeleteId === editingProgramId ? (
-                            <div className="flex items-center gap-3">
-                              <p className="text-sm text-muted-foreground flex-1">Are you sure you want to permanently delete this program?</p>
-                              <button
-                                onClick={() => handleDelete(editingProgramId)}
-                                disabled={!!deletingId}
-                                className="rounded-md bg-destructive px-3 py-1.5 text-xs font-medium text-destructive-foreground hover:bg-destructive/90 transition-colors disabled:opacity-60"
-                              >
-                                {deletingId ? "Deleting…" : "Yes, Delete"}
-                              </button>
-                              <button
-                                onClick={() => setConfirmDeleteId(null)}
-                                className="rounded-md border border-border px-3 py-1.5 text-xs font-medium text-muted-foreground hover:bg-secondary transition-colors"
-                              >
-                                Cancel
-                              </button>
-                            </div>
-                          ) : (
-                            <button
-                              onClick={() => setConfirmDeleteId(editingProgramId)}
-                              className="inline-flex items-center gap-1.5 rounded-md bg-destructive/10 px-3 py-1.5 text-xs font-medium text-destructive hover:bg-destructive/20 transition-colors"
-                            >
-                              <Trash2 className="h-3.5 w-3.5" />
-                              Delete Program
-                            </button>
-                          )}
                         </div>
+                        <div>
+                          <label className="block text-sm font-medium text-foreground mb-1.5">Rules Summary <span className="text-muted-foreground font-normal">(optional)</span></label>
+                          <textarea
+                            rows={3}
+                            placeholder="Brief rules and guidelines..."
+                            value={form.programRules}
+                            onChange={(e) => setField("programRules", e.target.value)}
+                            className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring resize-none"
+                          />
+                        </div>
+                        <FormField
+                          label="Disclosure Email (optional)"
+                          placeholder="security@company.com"
+                          type="email"
+                          value={form.disclosureEmail}
+                          onChange={(v) => setField("disclosureEmail", v)}
+                        />
+                      </>
+                    )}
+
+                    {formStep === 2 && (
+                      <div className="space-y-5">
+                        {/* Premium toggle */}
+                        <div className="flex items-center justify-between rounded-md border border-border px-4 py-3">
+                          <div>
+                            <p className="text-sm font-medium text-foreground">Premium Program</p>
+                            <p className="text-xs text-muted-foreground mt-0.5">Visible to paid subscribers only</p>
+                          </div>
+                          <button
+                            type="button"
+                            role="switch"
+                            aria-checked={isPremiumProgram}
+                            onClick={() => setIsPremiumProgram((v) => !v)}
+                            className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors focus:outline-none ${isPremiumProgram ? "bg-amber-500" : "bg-secondary"
+                              }`}
+                          >
+                            <span
+                              className={`pointer-events-none inline-block h-5 w-5 rounded-full bg-white shadow transition-transform ${isPremiumProgram ? "translate-x-5" : "translate-x-0"
+                                }`}
+                            />
+                          </button>
+                        </div>
+
+                        <div className="text-center py-6 space-y-3">
+                          <ClipboardList className="h-10 w-10 text-primary mx-auto" />
+                          <h3 className="text-lg font-semibold text-foreground">Ready to Submit</h3>
+                          <p className="text-sm text-muted-foreground">Review your program details and submit for admin approval.</p>
+                        </div>
+
+                        {/* Delete button (edit mode only) */}
+                        {editingProgramId && (
+                          <div className="border-t border-border pt-4">
+                            {confirmDeleteId === editingProgramId ? (
+                              <div className="flex items-center gap-3">
+                                <p className="text-sm text-muted-foreground flex-1">Are you sure you want to permanently delete this program?</p>
+                                <button
+                                  onClick={() => handleDelete(editingProgramId)}
+                                  disabled={!!deletingId}
+                                  className="rounded-md bg-destructive px-3 py-1.5 text-xs font-medium text-destructive-foreground hover:bg-destructive/90 transition-colors disabled:opacity-60"
+                                >
+                                  {deletingId ? "Deleting…" : "Yes, Delete"}
+                                </button>
+                                <button
+                                  onClick={() => setConfirmDeleteId(null)}
+                                  className="rounded-md border border-border px-3 py-1.5 text-xs font-medium text-muted-foreground hover:bg-secondary transition-colors"
+                                >
+                                  Cancel
+                                </button>
+                              </div>
+                            ) : (
+                              <button
+                                onClick={() => setConfirmDeleteId(editingProgramId)}
+                                className="inline-flex items-center gap-1.5 rounded-md bg-destructive/10 px-3 py-1.5 text-xs font-medium text-destructive hover:bg-destructive/20 transition-colors"
+                              >
+                                <Trash2 className="h-3.5 w-3.5" />
+                                Delete Program
+                              </button>
+                            )}
+                          </div>
+                        )}
+                      </div>
+                    )}
+
+                    <div className="flex justify-between pt-4 relative z-10">
+                      <button
+                        onClick={() => setFormStep(Math.max(0, formStep - 1))}
+                        className={`rounded-xl border border-border/60 bg-card px-5 py-2.5 text-sm font-bold text-foreground hover:bg-secondary hover:border-foreground/20 transition-all shadow-sm ${formStep === 0 ? "invisible" : ""}`}
+                      >
+                        Back
+                      </button>
+                      {formStep < 2 ? (
+                        <button
+                          onClick={handleContinue}
+                          className="group inline-flex items-center gap-2 rounded-xl bg-primary px-6 py-2.5 text-sm font-bold text-primary-foreground hover:bg-primary/90 transition-all shadow-sm hover:shadow-md hover:-translate-y-0.5"
+                        >
+                          Continue
+                        </button>
+                      ) : (
+                        <button
+                          onClick={handleSubmit}
+                          disabled={submitting}
+                          className="group inline-flex items-center gap-2 rounded-xl bg-primary px-6 py-2.5 text-sm font-bold text-primary-foreground hover:bg-primary/90 transition-all shadow-sm hover:shadow-md hover:-translate-y-0.5 disabled:opacity-50 disabled:cursor-not-allowed"
+                        >
+                          {submitting ? "Submitting…" : "Submit for Approval"}
+                        </button>
                       )}
                     </div>
-                  )}
-
-                  <div className="flex justify-between pt-2">
-                    <button
-                      onClick={() => setFormStep(Math.max(0, formStep - 1))}
-                      className={`rounded-md border border-border px-4 py-2 text-sm font-medium text-secondary-foreground hover:bg-secondary transition-colors ${formStep === 0 ? "invisible" : ""}`}
-                    >
-                      Back
-                    </button>
-                    {formStep < 2 ? (
-                      <button
-                        onClick={handleContinue}
-                        className="rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90 transition-colors"
-                      >
-                        Continue
-                      </button>
-                    ) : (
-                      <button
-                        onClick={handleSubmit}
-                        disabled={submitting}
-                        className="rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90 transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
-                      >
-                        {submitting ? "Submitting…" : "Submit for Approval"}
-                      </button>
-                    )}
                   </div>
                 </div>
               </div>
@@ -879,9 +884,10 @@ const EmployerDashboard = () => {
 
       {/* ── Create / Edit Bug Modal ───────────────────────────────────────── */}
       {showBugModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
-          <div className="w-full max-w-lg rounded-xl border border-border bg-card shadow-2xl overflow-y-auto max-h-[90vh]">
-            <div className="flex items-center justify-between px-6 py-4 border-b border-border">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/65 backdrop-blur-md animate-in fade-in duration-200">
+          <div className="w-full max-w-lg rounded-2xl border border-border/50 glass-card shadow-2xl overflow-hidden max-h-[90vh] flex flex-col animate-in zoom-in-95 duration-300 relative">
+            <div className="absolute top-0 right-0 w-32 h-32 bg-primary/10 rounded-full blur-2xl -mr-16 -mt-16 pointer-events-none" />
+            <div className="flex items-center justify-between px-6 py-5 border-b border-border/40 relative z-10">
               <h2 className="text-base font-semibold text-foreground">
                 {editingBug ? "Edit Exclusive Bug" : "Create Exclusive Bug"}
               </h2>
@@ -982,9 +988,8 @@ const EmployerDashboard = () => {
                                 key={cat.categoryId}
                                 type="button"
                                 onClick={() => { setBugForm((p) => ({ ...p, categoryId: cat.categoryId, categoryName: cat.name })); setCatDropdownOpen(false); setCategorySearch(""); }}
-                                className={`w-full text-left px-3 py-2 text-sm hover:bg-secondary transition-colors ${
-                                  bugForm.categoryId === cat.categoryId ? "font-medium text-primary" : "text-foreground"
-                                }`}
+                                className={`w-full text-left px-3 py-2 text-sm hover:bg-secondary transition-colors ${bugForm.categoryId === cat.categoryId ? "font-medium text-primary" : "text-foreground"
+                                  }`}
                               >
                                 {cat.name}
                               </button>
@@ -1034,14 +1039,12 @@ const EmployerDashboard = () => {
                     role="switch"
                     aria-checked={bugForm.accessType === "premium"}
                     onClick={() => setBugForm((p) => ({ ...p, accessType: p.accessType === "premium" ? "free" : "premium" }))}
-                    className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors focus:outline-none ${
-                      bugForm.accessType === "premium" ? "bg-amber-500" : "bg-green-500"
-                    }`}
+                    className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors focus:outline-none ${bugForm.accessType === "premium" ? "bg-amber-500" : "bg-green-500"
+                      }`}
                   >
                     <span
-                      className={`pointer-events-none inline-block h-5 w-5 rounded-full bg-white shadow transition-transform ${
-                        bugForm.accessType === "premium" ? "translate-x-5" : "translate-x-0"
-                      }`}
+                      className={`pointer-events-none inline-block h-5 w-5 rounded-full bg-white shadow transition-transform ${bugForm.accessType === "premium" ? "translate-x-5" : "translate-x-0"
+                        }`}
                     />
                   </button>
                   <span className={`text-xs font-medium ${bugForm.accessType === "premium" ? "text-amber-400" : "text-muted-foreground"}`}>Premium</span>
@@ -1110,13 +1113,13 @@ function FormField({
 }) {
   return (
     <div>
-      <label className="block text-sm font-medium text-foreground mb-1.5">{label}</label>
+      <label className="block text-sm font-bold text-foreground mb-2">{label}</label>
       <input
         type={type}
         placeholder={placeholder}
         value={value}
         onChange={(e) => onChange(e.target.value)}
-        className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+        className="w-full rounded-xl border border-input bg-background/50 px-4 py-3 text-sm font-medium text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 transition-colors"
       />
     </div>
   );

@@ -40,19 +40,29 @@ const PromoterLogin = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-background px-4 py-8">
-      <div className="w-full max-w-md">
+    <div className="min-h-screen flex items-center justify-center bg-background px-4 py-8 selection:bg-primary/20 relative overflow-hidden">
+      {/* Animated background elements */}
+      <div className="absolute inset-0 bg-[linear-gradient(to_right,#80808012_1px,transparent_1px),linear-gradient(to_bottom,#80808012_1px,transparent_1px)] bg-[size:24px_24px]"></div>
+      <div className="absolute left-0 right-0 top-0 -z-10 m-auto h-[310px] w-[310px] rounded-full bg-primary/20 opacity-20 blur-[100px]"></div>
+
+      <div className="w-full max-w-md relative z-10 animate-in fade-in zoom-in-95 duration-500">
         <div className="text-center mb-8">
-          <Link to="/" className="inline-flex items-center gap-2 text-xl font-bold text-foreground">
-            <Shield className="h-6 w-6 text-primary" />
-            BugSpace
+          <Link to="/" className="inline-flex items-center gap-2 group">
+            <div className="p-2 rounded-xl bg-primary/10 group-hover:bg-primary/20 transition-colors">
+              <Shield className="h-6 w-6 text-primary" />
+            </div>
+            <span className="text-3xl font-extrabold tracking-tight text-foreground">
+              BugSpace<span className="text-primary">.</span>
+            </span>
           </Link>
-          <p className="mt-2 text-sm text-muted-foreground">Promoter portal sign in</p>
+          <p className="mt-3 text-sm font-medium text-muted-foreground">Promoter portal sign in</p>
         </div>
 
-        <div className="glass-card p-6 space-y-4">
-          <div className="inline-flex items-center gap-2 rounded-full border border-border bg-secondary/50 px-3 py-1 text-xs text-muted-foreground">
-            <Megaphone className="h-3.5 w-3.5" />
+        <div className="glass-card p-8 space-y-6 shadow-2xl relative overflow-hidden">
+          <div className="absolute top-0 right-0 w-32 h-32 bg-primary/10 rounded-full blur-2xl -mr-16 -mt-16 pointer-events-none" />
+
+          <div className="inline-flex items-center justify-center w-full gap-2 rounded-xl border border-border/50 bg-secondary/30 px-4 py-2 text-xs font-semibold text-muted-foreground relative z-10">
+            <Megaphone className="h-4 w-4 text-primary" />
             Promoter accounts are created by admins only
           </div>
 
@@ -63,9 +73,9 @@ const PromoterLogin = () => {
             </div>
           )}
 
-          <form className="space-y-3" onSubmit={handleSubmit}>
+          <form className="space-y-4 relative z-10" onSubmit={handleSubmit}>
             <div>
-              <label className="block text-xs font-medium text-muted-foreground mb-1">
+              <label className="block text-xs font-bold uppercase tracking-widest text-muted-foreground mb-2">
                 Username or email
               </label>
               <input
@@ -73,25 +83,25 @@ const PromoterLogin = () => {
                 value={identifier}
                 onChange={(e) => setIdentifier(e.target.value)}
                 placeholder="promoter@example.com"
-                className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+                className="w-full rounded-xl border border-input bg-background/50 px-4 py-3 text-sm font-medium text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all hover:bg-background/80"
               />
             </div>
 
             <div>
-              <label className="block text-xs font-medium text-muted-foreground mb-1">Password</label>
+              <label className="block text-xs font-bold uppercase tracking-widest text-muted-foreground mb-2">Password</label>
               <input
                 type="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="Enter your password"
-                className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+                className="w-full rounded-xl border border-input bg-background/50 px-4 py-3 text-sm font-medium text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all hover:bg-background/80"
               />
             </div>
 
             <button
               type="submit"
               disabled={loading}
-              className="w-full rounded-md bg-primary px-4 py-2.5 text-sm font-medium text-primary-foreground hover:bg-primary/90 transition-colors disabled:opacity-60"
+              className="w-full rounded-xl bg-primary px-4 py-3 text-sm font-bold text-primary-foreground hover:bg-primary/90 transition-all shadow-md hover:shadow-lg hover:-translate-y-0.5 disabled:opacity-50 disabled:pointer-events-none mt-2"
             >
               {loading ? (
                 <span className="inline-flex items-center gap-2">

@@ -38,8 +38,8 @@ export function Navbar() {
   return (
     <header className="sticky top-0 z-50 w-full border-b border-border bg-background/80 backdrop-blur-md">
       <div className="container flex h-14 items-center justify-between">
-        <Link to="/" className="flex items-center gap-2 font-bold text-lg text-foreground">
-          <Shield className="h-5 w-5 text-primary" />
+        <Link to="/" className="flex items-center gap-2 font-bold text-lg text-foreground group transition-transform hover:scale-105">
+          <Shield className="h-5 w-5 text-primary transition-transform group-hover:rotate-12" />
           BugSpace
         </Link>
 
@@ -48,8 +48,8 @@ export function Navbar() {
           <Link
             to="/browse"
             className={cn(
-              "text-sm font-medium transition-colors hover:text-foreground",
-              location.pathname === "/browse" ? "text-foreground" : "text-muted-foreground"
+              "text-sm font-medium transition-all duration-300 hover:text-foreground relative after:absolute after:bottom-[-4px] after:left-0 after:h-[2px] after:w-0 after:bg-primary after:transition-all after:duration-300 hover:after:w-full",
+              location.pathname === "/browse" ? "text-foreground after:w-full" : "text-muted-foreground"
             )}
           >
             Browse Programs
@@ -57,19 +57,19 @@ export function Navbar() {
           <Link
             to="/premium"
             className={cn(
-              "text-sm font-medium transition-colors hover:text-foreground flex items-center gap-1",
-              location.pathname === "/premium" ? "text-foreground" : "text-muted-foreground"
+              "text-sm font-medium transition-all duration-300 hover:text-foreground flex items-center gap-1 group relative after:absolute after:bottom-[-4px] after:left-0 after:h-[2px] after:w-0 after:bg-amber-500 after:transition-all after:duration-300 hover:after:w-full",
+              location.pathname === "/premium" ? "text-foreground after:w-full" : "text-muted-foreground"
             )}
           >
-            <span className="text-amber-500">★</span>
+            <span className="text-amber-500 transition-transform duration-300 group-hover:scale-125 group-hover:rotate-12">★</span>
             Premium
           </Link>
           {user && (
             <Link
               to={getDashboardLink()}
               className={cn(
-                "text-sm font-medium transition-colors hover:text-foreground",
-                location.pathname === getDashboardLink() ? "text-foreground" : "text-muted-foreground"
+                "text-sm font-medium transition-all duration-300 hover:text-foreground relative after:absolute after:bottom-[-4px] after:left-0 after:h-[2px] after:w-0 after:bg-primary after:transition-all after:duration-300 hover:after:w-full",
+                location.pathname === getDashboardLink() ? "text-foreground after:w-full" : "text-muted-foreground"
               )}
             >
               Dashboard
@@ -79,8 +79,8 @@ export function Navbar() {
             <Link
               to="/notes"
               className={cn(
-                "text-sm font-medium transition-colors hover:text-foreground",
-                location.pathname === "/notes" ? "text-foreground" : "text-muted-foreground"
+                "text-sm font-medium transition-all duration-300 hover:text-foreground relative after:absolute after:bottom-[-4px] after:left-0 after:h-[2px] after:w-0 after:bg-primary after:transition-all after:duration-300 hover:after:w-full",
+                location.pathname === "/notes" ? "text-foreground after:w-full" : "text-muted-foreground"
               )}
             >
               Notes
@@ -90,11 +90,11 @@ export function Navbar() {
             <Link
               to="/bounty-tracker"
               className={cn(
-                "text-sm font-medium transition-colors hover:text-foreground flex items-center gap-1",
-                location.pathname === "/bounty-tracker" ? "text-foreground" : "text-muted-foreground"
+                "text-sm font-medium transition-all duration-300 hover:text-foreground flex items-center gap-1 group relative after:absolute after:bottom-[-4px] after:left-0 after:h-[2px] after:w-0 after:bg-amber-500 after:transition-all after:duration-300 hover:after:w-full",
+                location.pathname === "/bounty-tracker" ? "text-foreground after:w-full" : "text-muted-foreground"
               )}
             >
-              <span className="text-amber-500">★</span>
+              <span className="text-amber-500 transition-transform duration-300 group-hover:scale-125 group-hover:rotate-12">★</span>
               Bounty Tracker
             </Link>
           )}
@@ -102,11 +102,11 @@ export function Navbar() {
             <Link
               to="/exclusive-bugs"
               className={cn(
-                "text-sm font-medium transition-colors hover:text-foreground flex items-center gap-1",
-                location.pathname === "/exclusive-bugs" ? "text-foreground" : "text-muted-foreground"
+                "text-sm font-medium transition-all duration-300 hover:text-foreground flex items-center gap-1 group relative after:absolute after:bottom-[-4px] after:left-0 after:h-[2px] after:w-0 after:bg-amber-500 after:transition-all after:duration-300 hover:after:w-full",
+                location.pathname === "/exclusive-bugs" ? "text-foreground after:w-full" : "text-muted-foreground"
               )}
             >
-              <span className="text-amber-500">★</span>
+              <span className="text-amber-500 transition-transform duration-300 group-hover:scale-125 group-hover:rotate-12">★</span>
               Exclusive Bugs
             </Link>
           )}
@@ -132,9 +132,9 @@ export function Navbar() {
             <div className="relative">
               <button
                 onClick={() => setDropdownOpen(!dropdownOpen)}
-                className="flex items-center gap-2 px-3 py-1.5 rounded-md hover:bg-muted transition-colors"
+                className="flex items-center gap-2 px-3 py-1.5 rounded-md hover:bg-muted transition-all duration-200 active:scale-95 group"
               >
-                <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center">
+                <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center transition-transform duration-300 group-hover:scale-110">
                   <User className="h-4 w-4 text-primary" />
                 </div>
                 <div className="flex flex-col items-start">
@@ -143,29 +143,29 @@ export function Navbar() {
                   </span>
                   <span className="text-xs text-muted-foreground">{getRoleLabel()}</span>
                 </div>
-                <ChevronDown className="h-4 w-4 text-muted-foreground" />
+                <ChevronDown className={cn("h-4 w-4 text-muted-foreground transition-transform duration-300", dropdownOpen && "rotate-180")} />
               </button>
 
               {dropdownOpen && (
                 <>
-                  <div 
-                    className="fixed inset-0 z-10" 
-                    onClick={() => setDropdownOpen(false)} 
+                  <div
+                    className="fixed inset-0 z-10"
+                    onClick={() => setDropdownOpen(false)}
                   />
-                  <div className="absolute right-0 top-full mt-2 w-48 rounded-md border border-border bg-card shadow-lg z-20">
+                  <div className="absolute right-0 top-full mt-2 w-48 rounded-xl border border-border/50 bg-card/95 backdrop-blur shadow-xl z-20 overflow-hidden animate-in fade-in zoom-in-95 duration-200 origin-top-right">
                     <Link
                       to={getDashboardLink()}
                       onClick={() => setDropdownOpen(false)}
-                      className="flex items-center gap-2 px-3 py-2 text-sm text-muted-foreground hover:bg-muted hover:text-foreground"
+                      className="flex items-center gap-2 px-4 py-3 text-sm text-muted-foreground hover:bg-secondary hover:text-foreground transition-colors group"
                     >
-                      <User className="h-4 w-4" />
+                      <User className="h-4 w-4 transition-transform group-hover:scale-110 group-hover:text-primary" />
                       Dashboard
                     </Link>
                     <button
                       onClick={handleSignOut}
-                      className="flex items-center gap-2 px-3 py-2 text-sm text-muted-foreground hover:bg-muted hover:text-foreground w-full"
+                      className="flex items-center gap-2 px-4 py-3 text-sm text-muted-foreground hover:bg-destructive/10 hover:text-destructive transition-colors w-full group"
                     >
-                      <LogOut className="h-4 w-4" />
+                      <LogOut className="h-4 w-4 transition-transform group-hover:scale-110 group-hover:-translate-x-0.5" />
                       Sign Out
                     </button>
                   </div>
@@ -176,13 +176,13 @@ export function Navbar() {
             <>
               <Link
                 to="/login"
-                className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
+                className="text-sm font-medium text-muted-foreground hover:text-foreground transition-all duration-200 hover:scale-105"
               >
                 Sign In
               </Link>
               <Link
                 to="/register"
-                className="inline-flex items-center justify-center rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90 transition-colors"
+                className="inline-flex items-center justify-center rounded-xl bg-primary px-5 py-2.5 text-sm font-bold text-primary-foreground hover:bg-primary/90 transition-all duration-300 shadow-md hover:shadow-lg hover:-translate-y-0.5 active:scale-95"
               >
                 Get Started
               </Link>

@@ -31,7 +31,7 @@ import {
 } from "recharts";
 
 // â”€â”€ Analytics helpers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-const MONTH_LABELS = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+const MONTH_LABELS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
 
 function last6Months(): { label: string; year: number; month: number }[] {
   const result: { label: string; year: number; month: number }[] = [];
@@ -70,9 +70,9 @@ interface AdminUser {
 // â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 function SourceBadge({ source }: { source: string }) {
   const configs: Record<string, { label: string; classes: string }> = {
-    "admin-granted": { label: "Admin",    classes: "bg-blue-500/15 text-blue-400" },
-    "referral":      { label: "Referral", classes: "bg-emerald-500/15 text-emerald-400" },
-    "paid":          { label: "Paid",     classes: "bg-amber-500/15 text-amber-400" },
+    "admin-granted": { label: "Admin", classes: "bg-blue-500/15 text-blue-400" },
+    "referral": { label: "Referral", classes: "bg-emerald-500/15 text-emerald-400" },
+    "paid": { label: "Paid", classes: "bg-amber-500/15 text-amber-400" },
   };
   const cfg = configs[source] ?? { label: source, classes: "bg-secondary text-muted-foreground" };
   return (
@@ -88,44 +88,44 @@ const AdminPanel = () => {
   const [activeTab, setActiveTab] = useState("programs");
 
   // â”€â”€ dashboard stat counts â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-  const [totalPrograms,     setTotalPrograms]     = useState<number | null>(null);
+  const [totalPrograms, setTotalPrograms] = useState<number | null>(null);
   const [activePremiumCount, setActivePremiumCount] = useState<number | null>(null);
-  const [totalUsers,        setTotalUsers]        = useState<number | null>(null);
+  const [totalUsers, setTotalUsers] = useState<number | null>(null);
 
   // â”€â”€ programs tab â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-  const [adminPrograms,    setAdminPrograms]    = useState<AdminProgram[]>([]);
-  const [programsLoading,  setProgramsLoading]  = useState(false);
+  const [adminPrograms, setAdminPrograms] = useState<AdminProgram[]>([]);
+  const [programsLoading, setProgramsLoading] = useState(false);
 
   // â”€â”€ users tab â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-  const [adminUsers,   setAdminUsers]   = useState<AdminUser[]>([]);
+  const [adminUsers, setAdminUsers] = useState<AdminUser[]>([]);
   const [usersLoading, setUsersLoading] = useState(false);
-  const [userQuery,    setUserQuery]    = useState("");
+  const [userQuery, setUserQuery] = useState("");
 
   // â”€â”€ analytics tab â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-  const [programDates,    setProgramDates]    = useState<Date[]>([]);
-  const [userDates,       setUserDates]       = useState<Date[]>([]);
-  const [premiumDates,    setPremiumDates]    = useState<Date[]>([]);
+  const [programDates, setProgramDates] = useState<Date[]>([]);
+  const [userDates, setUserDates] = useState<Date[]>([]);
+  const [premiumDates, setPremiumDates] = useState<Date[]>([]);
   const [analyticsLoaded, setAnalyticsLoaded] = useState(false);
 
   // â”€â”€ premium tab â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-  const [premiumUsers,          setPremiumUsers]          = useState<PremiumUserRecord[]>([]);
-  const [referralPremiumUsers,  setReferralPremiumUsers]  = useState<ReferralPremiumUser[]>([]);
-  const [premiumLoading,        setPremiumLoading]        = useState(false);
-  const [allUsers,              setAllUsers]              = useState<AppUser[]>([]);
-  const [userSearch,            setUserSearch]            = useState("");
-  const [duration,              setDuration]              = useState<"1m" | "2m" | "3m" | "custom">("1m");
-  const [customStart,           setCustomStart]           = useState("");
-  const [customEnd,             setCustomEnd]             = useState("");
-  const [assigning,             setAssigning]             = useState(false);
-  const [sourceFilter,          setSourceFilter]          = useState<"all" | "admin" | "referral">("all");
+  const [premiumUsers, setPremiumUsers] = useState<PremiumUserRecord[]>([]);
+  const [referralPremiumUsers, setReferralPremiumUsers] = useState<ReferralPremiumUser[]>([]);
+  const [premiumLoading, setPremiumLoading] = useState(false);
+  const [allUsers, setAllUsers] = useState<AppUser[]>([]);
+  const [userSearch, setUserSearch] = useState("");
+  const [duration, setDuration] = useState<"1m" | "2m" | "3m" | "custom">("1m");
+  const [customStart, setCustomStart] = useState("");
+  const [customEnd, setCustomEnd] = useState("");
+  const [assigning, setAssigning] = useState(false);
+  const [sourceFilter, setSourceFilter] = useState<"all" | "admin" | "referral">("all");
 
   // -- announcements tab ---------------------------------------------------
-  const [announcements,         setAnnouncements]         = useState<Announcement[]>([]);
-  const [announcementsLoading,  setAnnouncementsLoading]  = useState(false);
-  const [annTitle,              setAnnTitle]              = useState("");
-  const [annMessage,            setAnnMessage]            = useState("");
-  const [annSaving,             setAnnSaving]             = useState(false);
-  const [editingAnn,            setEditingAnn]            = useState<Announcement | null>(null);
+  const [announcements, setAnnouncements] = useState<Announcement[]>([]);
+  const [announcementsLoading, setAnnouncementsLoading] = useState(false);
+  const [annTitle, setAnnTitle] = useState("");
+  const [annMessage, setAnnMessage] = useState("");
+  const [annSaving, setAnnSaving] = useState(false);
+  const [editingAnn, setEditingAnn] = useState<Announcement | null>(null);
 
   // â”€â”€ load dashboard stats on mount â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   useEffect(() => {
@@ -156,12 +156,12 @@ const AdminPanel = () => {
     getDocs(query(collection(db, "programs"), orderBy("createdAt", "desc")))
       .then((snap) => {
         setAdminPrograms(snap.docs.map((d) => ({
-          id:           d.id,
-          programName:  d.data().programName  ?? "â€”",
-          companyName:  d.data().companyName  ?? "â€”",
+          id: d.id,
+          programName: d.data().programName ?? "â€”",
+          companyName: d.data().companyName ?? "â€”",
           platformType: d.data().platformType ?? "â€”",
-          isPremium:    d.data().isPremium    ?? false,
-          createdAt:    d.data().createdAt?.toDate?.() ?? new Date(),
+          isPremium: d.data().isPremium ?? false,
+          createdAt: d.data().createdAt?.toDate?.() ?? new Date(),
         })));
       })
       .catch(() => toast.error("Failed to load programs."))
@@ -175,9 +175,9 @@ const AdminPanel = () => {
     getDocs(query(collection(db, "users"), orderBy("createdAt", "desc")))
       .then((snap) => {
         setAdminUsers(snap.docs.map((d) => ({
-          id:        d.id,
-          fullName:  d.data().fullName  ?? "â€”",
-          email:     d.data().email     ?? "â€”",
+          id: d.id,
+          fullName: d.data().fullName ?? "â€”",
+          email: d.data().email ?? "â€”",
           createdAt: d.data().createdAt?.toDate?.() ?? new Date(),
         })));
       })
@@ -195,11 +195,11 @@ const AdminPanel = () => {
     ]).then(([pSnap, uSnap, prSnap]) => {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const toDate = (v: any): Date => v?.toDate?.() ?? new Date();
-      setProgramDates(pSnap.docs.map((d)  => toDate(d.data().createdAt)));
-      setUserDates(uSnap.docs.map((d)    => toDate(d.data().createdAt)));
+      setProgramDates(pSnap.docs.map((d) => toDate(d.data().createdAt)));
+      setUserDates(uSnap.docs.map((d) => toDate(d.data().createdAt)));
       setPremiumDates(prSnap.docs.map((d) => toDate(d.data().createdAt)));
       setAnalyticsLoaded(true);
-    }).catch(() => {});
+    }).catch(() => { });
   }, [activeTab, analyticsLoaded]);
 
   // -- load announcements tab -----------------------------------------------
@@ -213,7 +213,7 @@ const AdminPanel = () => {
 
   useEffect(() => {
     if (activeTab === "announcements") loadAnnouncements();
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activeTab]);
 
   const handleSaveAnnouncement = async () => {
@@ -291,7 +291,7 @@ const AdminPanel = () => {
   useEffect(() => {
     if (activeTab === "premium") {
       loadPremiumUsers();
-      fetchAllUsers().then(setAllUsers).catch(() => {});
+      fetchAllUsers().then(setAllUsers).catch(() => { });
     }
   }, [activeTab]);
 
@@ -349,7 +349,7 @@ const AdminPanel = () => {
   // â”€â”€ derived â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   const months = last6Months();
   const programGrowth = groupByMonth(programDates, months);
-  const userGrowth    = groupByMonth(userDates,    months);
+  const userGrowth = groupByMonth(userDates, months);
   const premiumGrowth = groupByMonth(premiumDates, months);
 
   const filteredAdminUsers = adminUsers.filter(
@@ -359,37 +359,45 @@ const AdminPanel = () => {
   );
 
   const dynamicStats = [
-    { label: "Total Programs",  value: totalPrograms      === null ? "â€¦" : String(totalPrograms),      icon: Shield },
-    { label: "Premium Users",   value: activePremiumCount === null ? "â€¦" : String(activePremiumCount), icon: Star },
-    { label: "Active Users",    value: totalUsers         === null ? "â€¦" : String(totalUsers),         icon: Users },
-    { label: "Revenue",         value: "$0",                                                           icon: DollarSign },
+    { label: "Total Programs", value: totalPrograms === null ? "â€¦" : String(totalPrograms), icon: Shield },
+    { label: "Premium Users", value: activePremiumCount === null ? "â€¦" : String(activePremiumCount), icon: Star },
+    { label: "Active Users", value: totalUsers === null ? "â€¦" : String(totalUsers), icon: Users },
+    { label: "Revenue", value: "$0", icon: DollarSign },
   ];
 
   const sidebarItems = [
-    { id: "programs",           label: "All Programs",       icon: Shield,    href: undefined },
-    { id: "users",              label: "Users",              icon: Users,     href: undefined },
-    { id: "analytics",          label: "Analytics",          icon: BarChart3, href: undefined },
-    { id: "premium",            label: "Premium Users",      icon: Star,      href: undefined },
-    { id: "announcements",      label: "Announcements",      icon: Megaphone, href: undefined },
-    { id: "promoters",          label: "Promoter Analytics", icon: Users,     href: "/admin/promoters" },
-    { id: "platform-analytics", label: "Platform Analytics", icon: Activity,  href: "/admin/analytics" },
+    { id: "programs", label: "All Programs", icon: Shield, href: undefined },
+    { id: "users", label: "Users", icon: Users, href: undefined },
+    { id: "analytics", label: "Analytics", icon: BarChart3, href: undefined },
+    { id: "premium", label: "Premium Users", icon: Star, href: undefined },
+    { id: "announcements", label: "Announcements", icon: Megaphone, href: undefined },
+    { id: "promoters", label: "Promoter Analytics", icon: Users, href: "/admin/promoters" },
+    { id: "platform-analytics", label: "Platform Analytics", icon: Activity, href: "/admin/analytics" },
   ];
 
   return (
-    <div className="min-h-screen flex flex-col bg-background">
+    <div className="min-h-screen flex flex-col bg-background selection:bg-primary/20 relative overflow-hidden">
+      {/* Background decorations */}
+      <div className="absolute inset-0 bg-grid-white/[0.02] bg-[size:32px] pointer-events-none" />
+      <div className="absolute top-1/4 left-[-10%] w-[500px] h-[500px] bg-primary/10 rounded-full blur-[120px] pointer-events-none opacity-50" />
+      <div className="absolute bottom-[-10%] right-[-5%] w-[400px] h-[400px] bg-amber-500/10 rounded-full blur-[120px] pointer-events-none opacity-40" />
+
       <Navbar />
-      <div className="container flex-1 py-8">
-        <h1 className="text-2xl font-bold text-foreground mb-6">Admin Panel</h1>
+      <div className="container flex-1 py-10 relative z-10 animate-in fade-in zoom-in-95 duration-700">
+        <h1 className="text-3xl font-extrabold text-foreground mb-8 tracking-tight">Admin Panel</h1>
 
         {/* Stats */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
           {dynamicStats.map((stat) => (
-            <div key={stat.label} className="glass-card p-4">
-              <div className="flex items-center gap-2 mb-2">
-                <stat.icon className="h-4 w-4 text-muted-foreground" />
-                <span className="text-xs text-muted-foreground">{stat.label}</span>
+            <div key={stat.label} className="glass-card p-5 group hover:shadow-lg transition-all relative overflow-hidden">
+              <div className="absolute top-0 right-0 w-24 h-24 bg-primary/5 rounded-full blur-xl -mr-12 -mt-12 group-hover:bg-primary/10 transition-colors pointer-events-none" />
+              <div className="flex items-center gap-2 mb-3 relative z-10">
+                <div className="p-2 rounded-lg bg-secondary/50">
+                  <stat.icon className="h-4 w-4 text-primary" />
+                </div>
+                <span className="text-sm font-medium text-muted-foreground">{stat.label}</span>
               </div>
-              <p className="text-2xl font-bold text-foreground">{stat.value}</p>
+              <p className="text-3xl font-extrabold text-foreground tracking-tight relative z-10">{stat.value}</p>
             </div>
           ))}
         </div>
@@ -400,11 +408,10 @@ const AdminPanel = () => {
               <button
                 key={item.id}
                 onClick={() => item.href ? navigate(item.href) : setActiveTab(item.id)}
-                className={`w-full flex items-center gap-2 rounded-md px-3 py-2 text-sm font-medium transition-colors ${
-                  activeTab === item.id ? "bg-primary/10 text-primary" : "text-muted-foreground hover:bg-secondary hover:text-foreground"
-                }`}
+                className={`w-full flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-bold transition-all ${activeTab === item.id ? "bg-primary/15 text-primary shadow-sm" : "text-muted-foreground hover:bg-secondary/60 hover:text-foreground"
+                  }`}
               >
-                <item.icon className="h-4 w-4" />
+                <item.icon className="h-4 w-4 shrink-0" />
                 {item.label}
               </button>
             ))}
@@ -429,12 +436,12 @@ const AdminPanel = () => {
                   <div className="overflow-x-auto">
                     <table className="w-full text-sm">
                       <thead>
-                        <tr className="border-b border-border">
-                          <th className="text-left py-3 px-4 font-medium text-muted-foreground">Program</th>
-                          <th className="text-left py-3 px-4 font-medium text-muted-foreground">Company</th>
-                          <th className="text-left py-3 px-4 font-medium text-muted-foreground">Platform</th>
-                          <th className="text-left py-3 px-4 font-medium text-muted-foreground">Type</th>
-                          <th className="text-left py-3 px-4 font-medium text-muted-foreground">Created</th>
+                        <tr className="border-b border-border/60 bg-secondary/30">
+                          <th className="px-5 py-4 text-xs font-extrabold text-foreground uppercase tracking-widest text-left">Program</th>
+                          <th className="px-4 py-4 text-xs font-extrabold text-foreground uppercase tracking-widest text-left">Company</th>
+                          <th className="px-4 py-4 text-xs font-extrabold text-foreground uppercase tracking-widest text-left">Platform</th>
+                          <th className="text-left py-4 px-4 text-xs font-extrabold text-foreground uppercase tracking-widest">Type</th>
+                          <th className="text-left py-4 px-4 text-xs font-extrabold text-foreground uppercase tracking-widest">Created</th>
                         </tr>
                       </thead>
                       <tbody>
@@ -496,10 +503,10 @@ const AdminPanel = () => {
                     <div className="overflow-x-auto">
                       <table className="w-full text-sm">
                         <thead>
-                          <tr className="border-b border-border">
-                            <th className="text-left py-3 px-4 font-medium text-muted-foreground">Name</th>
-                            <th className="text-left py-3 px-4 font-medium text-muted-foreground">Email</th>
-                            <th className="text-left py-3 px-4 font-medium text-muted-foreground">Joined</th>
+                          <tr className="border-b border-border/60 bg-secondary/30">
+                            <th className="px-5 py-4 text-xs font-extrabold text-foreground uppercase tracking-widest text-left">Name</th>
+                            <th className="px-4 py-4 text-xs font-extrabold text-foreground uppercase tracking-widest text-left">Email</th>
+                            <th className="px-4 py-4 text-xs font-extrabold text-foreground uppercase tracking-widest text-left">Joined</th>
                           </tr>
                         </thead>
                         <tbody>
@@ -524,8 +531,8 @@ const AdminPanel = () => {
             {activeTab === "analytics" && (
               <div className="space-y-6">
                 {[
-                  { title: "Programs Growth",     data: programGrowth, color: "#6366f1" },
-                  { title: "User Growth",          data: userGrowth,    color: "#22c55e" },
+                  { title: "Programs Growth", data: programGrowth, color: "#6366f1" },
+                  { title: "User Growth", data: userGrowth, color: "#22c55e" },
                   { title: "Premium Users Growth", data: premiumGrowth, color: "#f59e0b" },
                 ].map(({ title, data, color }) => (
                   <div key={title} className="glass-card p-5">
@@ -567,18 +574,16 @@ const AdminPanel = () => {
                         <button
                           key={d}
                           onClick={() => setDuration(d)}
-                          className={`rounded-md px-3 py-1.5 text-xs font-medium transition-colors ${
-                            duration === d ? "bg-primary text-primary-foreground" : "border border-border text-muted-foreground hover:bg-secondary"
-                          }`}
+                          className={`rounded-md px-3 py-1.5 text-xs font-medium transition-colors ${duration === d ? "bg-primary text-primary-foreground" : "border border-border text-muted-foreground hover:bg-secondary"
+                            }`}
                         >
                           {d === "1m" ? "1 Month" : d === "2m" ? "2 Months" : "3 Months"}
                         </button>
                       ))}
                       <button
                         onClick={() => setDuration("custom")}
-                        className={`rounded-md px-3 py-1.5 text-xs font-medium transition-colors ${
-                          duration === "custom" ? "bg-primary text-primary-foreground" : "border border-border text-muted-foreground hover:bg-secondary"
-                        }`}
+                        className={`rounded-md px-3 py-1.5 text-xs font-medium transition-colors ${duration === "custom" ? "bg-primary text-primary-foreground" : "border border-border text-muted-foreground hover:bg-secondary"
+                          }`}
                       >
                         Custom
                       </button>
@@ -642,11 +647,10 @@ const AdminPanel = () => {
                     <button
                       key={f}
                       onClick={() => setSourceFilter(f)}
-                      className={`rounded-md px-3 py-1.5 text-xs font-medium transition-colors ${
-                        sourceFilter === f
+                      className={`rounded-md px-3 py-1.5 text-xs font-medium transition-colors ${sourceFilter === f
                           ? "bg-primary text-primary-foreground"
                           : "border border-border text-muted-foreground hover:bg-secondary"
-                      }`}
+                        }`}
                     >
                       {f === "all" ? "All" : f === "admin" ? "Admin Granted" : "Referral Earned"}
                     </button>
@@ -668,12 +672,12 @@ const AdminPanel = () => {
                       <div className="overflow-x-auto">
                         <table className="w-full text-sm">
                           <thead>
-                            <tr className="border-b border-border">
-                              <th className="text-left py-3 px-4 font-medium text-muted-foreground">Email</th>
-                              <th className="text-left py-3 px-4 font-medium text-muted-foreground">Source</th>
-                              <th className="text-left py-3 px-4 font-medium text-muted-foreground">Expires</th>
-                              <th className="text-left py-3 px-4 font-medium text-muted-foreground">Status</th>
-                              <th className="text-right py-3 px-4 font-medium text-muted-foreground">Actions</th>
+                            <tr className="border-b border-border/60 bg-secondary/30">
+                              <th className="px-5 py-4 text-xs font-extrabold text-foreground uppercase tracking-widest text-left">Email</th>
+                              <th className="px-4 py-4 text-xs font-extrabold text-foreground uppercase tracking-widest text-left">Source</th>
+                              <th className="px-4 py-4 text-xs font-extrabold text-foreground uppercase tracking-widest text-left">Expires</th>
+                              <th className="px-4 py-4 text-xs font-extrabold text-foreground uppercase tracking-widest text-left">Status</th>
+                              <th className="px-4 py-4 text-xs font-extrabold text-foreground uppercase tracking-widest text-right">Actions</th>
                             </tr>
                           </thead>
                           <tbody>
@@ -731,12 +735,12 @@ const AdminPanel = () => {
                       <div className="overflow-x-auto">
                         <table className="w-full text-sm">
                           <thead>
-                            <tr className="border-b border-border">
-                              <th className="text-left py-3 px-4 font-medium text-muted-foreground">Email</th>
-                              <th className="text-left py-3 px-4 font-medium text-muted-foreground">Source</th>
-                              <th className="text-left py-3 px-4 font-medium text-muted-foreground">Referrals</th>
-                              <th className="text-left py-3 px-4 font-medium text-muted-foreground">Granted</th>
-                              <th className="text-left py-3 px-4 font-medium text-muted-foreground">Expires</th>
+                            <tr className="border-b border-border/60 bg-secondary/30">
+                              <th className="px-5 py-4 text-xs font-extrabold text-foreground uppercase tracking-widest text-left">Email</th>
+                              <th className="px-4 py-4 text-xs font-extrabold text-foreground uppercase tracking-widest text-left">Source</th>
+                              <th className="px-4 py-4 text-xs font-extrabold text-foreground uppercase tracking-widest text-left">Referrals</th>
+                              <th className="px-4 py-4 text-xs font-extrabold text-foreground uppercase tracking-widest text-left">Granted</th>
+                              <th className="px-4 py-4 text-xs font-extrabold text-foreground uppercase tracking-widest text-left">Expires</th>
                             </tr>
                           </thead>
                           <tbody>
@@ -833,7 +837,7 @@ const AdminPanel = () => {
                             <div className="flex-1 min-w-0">
                               <div className="flex items-center gap-2 mb-1">
                                 <p className="text-sm font-medium text-foreground truncate">{ann.title}</p>
-                                <span className={`shrink-0 inline-flex rounded-full px-2 py-0.5 text-xs font-medium ${ ann.active ? "bg-emerald-500/15 text-emerald-400" : "bg-secondary text-muted-foreground" }`}>
+                                <span className={`shrink-0 inline-flex rounded-full px-2 py-0.5 text-xs font-medium ${ann.active ? "bg-emerald-500/15 text-emerald-400" : "bg-secondary text-muted-foreground"}`}>
                                   {ann.active ? "Active" : "Disabled"}
                                 </span>
                               </div>

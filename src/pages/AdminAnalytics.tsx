@@ -56,42 +56,47 @@ export default function AdminAnalytics() {
 
   const statCards: StatCard[] = stats
     ? [
-        {
-          title: "Total Users",
-          value: stats.totalUsers,
-          icon: Users,
-          color: "text-primary",
-          bg: "bg-primary/10",
-        },
-        {
-          title: "Active Today",
-          value: stats.activeToday,
-          icon: Activity,
-          color: "text-green-500",
-          bg: "bg-green-500/10",
-        },
-        {
-          title: "New Users Today",
-          value: stats.newUsersToday,
-          icon: UserPlus,
-          color: "text-blue-500",
-          bg: "bg-blue-500/10",
-        },
-        {
-          title: "Visits Today",
-          value: stats.visitsToday,
-          icon: Eye,
-          color: "text-amber-500",
-          bg: "bg-amber-500/10",
-        },
-      ]
+      {
+        title: "Total Users",
+        value: stats.totalUsers,
+        icon: Users,
+        color: "text-primary",
+        bg: "bg-primary/10",
+      },
+      {
+        title: "Active Today",
+        value: stats.activeToday,
+        icon: Activity,
+        color: "text-green-500",
+        bg: "bg-green-500/10",
+      },
+      {
+        title: "New Users Today",
+        value: stats.newUsersToday,
+        icon: UserPlus,
+        color: "text-blue-500",
+        bg: "bg-blue-500/10",
+      },
+      {
+        title: "Visits Today",
+        value: stats.visitsToday,
+        icon: Eye,
+        color: "text-amber-500",
+        bg: "bg-amber-500/10",
+      },
+    ]
     : [];
 
   return (
-    <div className="min-h-screen flex flex-col bg-background">
+    <div className="min-h-screen flex flex-col bg-background selection:bg-primary/20 relative overflow-hidden">
+      {/* Background decorations */}
+      <div className="absolute inset-0 bg-grid-white/[0.02] bg-[size:32px] pointer-events-none" />
+      <div className="absolute top-1/4 left-[-10%] w-[500px] h-[500px] bg-primary/10 rounded-full blur-[120px] pointer-events-none opacity-50" />
+      <div className="absolute bottom-[-10%] right-[-5%] w-[400px] h-[400px] bg-amber-500/10 rounded-full blur-[120px] pointer-events-none opacity-40" />
+
       <Navbar />
 
-      <div className="container flex-1 py-8">
+      <div className="container flex-1 py-10 relative z-10 animate-in fade-in zoom-in-95 duration-700">
         {/* ── Header ── */}
         <div className="flex items-center justify-between mb-6">
           <div className="flex items-center gap-2 text-sm">
@@ -120,7 +125,7 @@ export default function AdminAnalytics() {
           </button>
         </div>
 
-        <h1 className="text-2xl font-bold text-foreground mb-6">
+        <h1 className="text-3xl font-extrabold text-foreground mb-8 tracking-tight">
           Platform Analytics
         </h1>
 
@@ -136,17 +141,20 @@ export default function AdminAnalytics() {
           <div className="space-y-6">
             {/* Stat Cards */}
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              {statCards.map((card) => (
-                <div key={card.title} className="glass-card p-4">
-                  <div className="flex items-center gap-2 mb-3">
-                    <div className={`${card.bg} p-1.5 rounded-md`}>
-                      <card.icon className={`h-4 w-4 ${card.color}`} />
+              {statCards.map((card, index) => (
+                <div
+                  key={card.title}
+                  className="glass-card p-6 flex flex-col justify-between group hover:shadow-lg transition-all relative overflow-hidden animate-in fade-in zoom-in slide-in-from-bottom-2 duration-700"
+                  style={{ animationDelay: `${index * 100}ms` }}
+                >
+                  <div className="absolute top-0 right-0 w-24 h-24 bg-primary/5 rounded-full blur-xl -mr-12 -mt-12 group-hover:bg-primary/10 transition-colors pointer-events-none" />
+                  <div className="flex items-center gap-3 mb-4 relative z-10">
+                    <div className={`${card.bg} p-2 rounded-lg`}>
+                      <card.icon className={`h-5 w-5 ${card.color}`} />
                     </div>
-                    <span className="text-xs text-muted-foreground">
-                      {card.title}
-                    </span>
+                    <span className="text-sm font-medium text-muted-foreground">{card.title}</span>
                   </div>
-                  <p className="text-3xl font-bold text-foreground">
+                  <p className="text-4xl font-extrabold text-foreground tracking-tight relative z-10">
                     {card.value.toLocaleString()}
                   </p>
                 </div>
@@ -154,20 +162,23 @@ export default function AdminAnalytics() {
             </div>
 
             {/* Active This Week banner */}
-            <div className="glass-card p-4">
-              <div className="flex items-center gap-2">
-                <Activity className="h-4 w-4 text-muted-foreground shrink-0" />
-                <span className="text-sm text-muted-foreground">
+            <div className="glass-card p-5 relative overflow-hidden group hover:shadow-md transition-shadow">
+              <div className="absolute inset-0 bg-gradient-to-r from-emerald-500/5 via-transparent to-transparent pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity" />
+              <div className="flex items-center gap-3 relative z-10">
+                <div className="p-2 rounded-lg bg-emerald-500/10">
+                  <Activity className="h-5 w-5 text-emerald-500 shrink-0" />
+                </div>
+                <span className="text-base font-medium text-foreground">
                   Active Users This Week
                 </span>
-                <span className="ml-auto text-xl font-bold text-foreground">
+                <span className="ml-auto text-2xl font-extrabold text-foreground">
                   {stats.activeThisWeek.toLocaleString()}
                 </span>
               </div>
             </div>
 
             {/* Daily Active Users Chart */}
-            <div className="glass-card p-5">
+            <div className="glass-card p-6 md:p-8">
               <div className="flex items-center gap-2 mb-4">
                 <TrendingUp className="h-4 w-4 text-muted-foreground" />
                 <h3 className="text-sm font-semibold text-foreground">
@@ -232,7 +243,7 @@ export default function AdminAnalytics() {
             </div>
 
             {/* Page Visit Distribution Chart */}
-            <div className="glass-card p-5">
+            <div className="glass-card p-6 md:p-8">
               <div className="flex items-center gap-2 mb-4">
                 <LayoutGrid className="h-4 w-4 text-muted-foreground" />
                 <h3 className="text-sm font-semibold text-foreground">

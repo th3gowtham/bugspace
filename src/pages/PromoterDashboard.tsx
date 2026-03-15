@@ -93,54 +93,62 @@ const PromoterDashboard = () => {
   const progressPercent = Math.min(100, Math.round((rewardProgressCount / rewardProgressRequired) * 100));
 
   return (
-    <div className="min-h-screen bg-background">
-      <header className="border-b border-border bg-background/90 backdrop-blur">
-        <div className="container h-14 flex items-center justify-between">
-          <Link to="/" className="inline-flex items-center gap-2 font-semibold text-foreground">
-            <Shield className="h-5 w-5 text-primary" />
+    <div className="min-h-screen bg-background selection:bg-primary/20 relative overflow-hidden flex flex-col">
+      {/* Background decorations */}
+      <div className="absolute inset-0 bg-grid-white/[0.02] bg-[size:32px] pointer-events-none" />
+      <div className="absolute top-1/4 left-[-10%] w-[500px] h-[500px] bg-primary/10 rounded-full blur-[120px] pointer-events-none opacity-50" />
+      <div className="absolute bottom-[-10%] right-[-5%] w-[400px] h-[400px] bg-amber-500/10 rounded-full blur-[120px] pointer-events-none opacity-40" />
+
+      <header className="border-b border-border/40 bg-background/80 backdrop-blur-md sticky top-0 z-50">
+        <div className="container h-16 flex items-center justify-between">
+          <Link to="/" className="inline-flex items-center gap-2 font-bold text-lg text-foreground tracking-tight hover:opacity-80 transition-opacity">
+            <Shield className="h-6 w-6 text-primary" />
             BugSpace
           </Link>
-          <div className="flex items-center gap-3">
-            <span className="hidden sm:inline text-sm text-muted-foreground">
-              Signed in as {session?.username}
+          <div className="flex items-center gap-4">
+            <span className="hidden sm:inline text-sm font-medium text-muted-foreground">
+              Signed in as <span className="text-foreground">{session?.username}</span>
             </span>
             <button
               onClick={handleSignOut}
-              className="inline-flex items-center gap-1.5 rounded-md border border-border px-3 py-1.5 text-sm text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors"
+              className="inline-flex items-center gap-1.5 rounded-xl border border-border/60 px-4 py-2 text-sm font-bold text-muted-foreground hover:text-foreground hover:bg-secondary hover:border-foreground/20 transition-all shadow-sm"
             >
-              <LogOut className="h-3.5 w-3.5" />
+              <LogOut className="h-4 w-4" />
               Sign out
             </button>
           </div>
         </div>
       </header>
 
-      <main className="container py-8 space-y-6">
+      <main className="container flex-1 py-10 space-y-8 relative z-10 animate-in fade-in zoom-in-95 duration-700">
         <div>
-          <h1 className="text-2xl font-bold text-foreground">Promoter Dashboard</h1>
-          <p className="text-sm text-muted-foreground mt-1">
+          <h1 className="text-3xl font-extrabold text-foreground tracking-tight">Promoter Dashboard</h1>
+          <p className="text-base text-muted-foreground mt-2 max-w-2xl">
             Track signups, premium conversions, commissions, and reward eligibility.
           </p>
         </div>
 
-        <div className="glass-card p-5 space-y-3">
-          <div className="flex items-center gap-2 text-sm font-medium text-foreground">
-            <Megaphone className="h-4 w-4 text-primary" />
-            Referral link
+        <div className="glass-card p-6 md:p-8 space-y-4 shadow-sm relative overflow-hidden group">
+          <div className="absolute top-0 right-0 w-32 h-32 bg-primary/5 rounded-full blur-2xl -mr-16 -mt-16 pointer-events-none group-hover:bg-primary/10 transition-colors" />
+          <div className="flex items-center gap-3 text-sm font-bold text-foreground relative z-10">
+            <div className="p-2 rounded-lg bg-primary/10">
+              <Megaphone className="h-4 w-4 text-primary" />
+            </div>
+            Your Unique Referral Link
           </div>
-          <div className="flex flex-col sm:flex-row gap-2">
+          <div className="flex flex-col sm:flex-row gap-3 relative z-10">
             <input
               readOnly
               value={loadingSummary ? "Loading..." : referralLink}
-              className="flex-1 rounded-md border border-input bg-muted px-3 py-2 text-xs text-muted-foreground font-mono"
+              className="flex-1 rounded-xl border border-input bg-background/50 px-4 py-3 text-sm text-foreground font-mono focus:outline-none focus:ring-2 focus:ring-primary/50 transition-colors"
             />
             <button
               onClick={copyReferralLink}
               disabled={loadingSummary || !referralLink}
-              className="inline-flex items-center justify-center gap-1.5 rounded-md bg-primary px-3 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90 transition-colors disabled:opacity-60"
+              className="inline-flex items-center justify-center gap-2 rounded-xl bg-primary px-6 py-3 text-sm font-bold text-primary-foreground hover:bg-primary/90 transition-all shadow-sm hover:shadow-md hover:-translate-y-0.5 disabled:opacity-50"
             >
-              <Copy className="h-3.5 w-3.5" />
-              Copy
+              <Copy className="h-4 w-4" />
+              Copy Link
             </button>
           </div>
         </div>
@@ -152,21 +160,21 @@ const PromoterDashboard = () => {
           <StatCard label="Reward premium months" value={rewardPremiumMonths} icon={Sparkles} loading={loadingSummary} />
         </div>
 
-        <div className="glass-card p-5 space-y-3">
-          <div className="flex items-center justify-between text-sm">
-            <p className="font-medium text-foreground">Reward progress</p>
-            <p className="text-muted-foreground">
-              {rewardProgressCount}/{rewardProgressRequired} valid referrals
+        <div className="glass-card p-6 md:p-8 space-y-4">
+          <div className="flex items-center justify-between">
+            <p className="text-sm font-bold uppercase tracking-widest text-muted-foreground">Reward progress</p>
+            <p className="text-sm font-semibold text-foreground">
+              {rewardProgressCount} / {rewardProgressRequired} <span className="text-muted-foreground font-normal">valid referrals</span>
             </p>
           </div>
-          <div className="h-2.5 w-full rounded-full bg-secondary overflow-hidden">
+          <div className="h-3 w-full rounded-full bg-secondary/50 overflow-hidden relative">
             <div
-              className="h-2.5 rounded-full bg-primary transition-all"
+              className="absolute top-0 left-0 h-full rounded-full bg-primary transition-all duration-1000 ease-out"
               style={{ width: `${progressPercent}%` }}
             />
           </div>
-          <p className="text-xs text-muted-foreground">
-            Every 20 valid referrals unlocks 1 premium month reward.
+          <p className="text-sm text-muted-foreground">
+            Every <strong className="text-foreground">{rewardProgressRequired}</strong> valid referrals unlocks <strong className="text-amber-500">1 premium month reward</strong>.
           </p>
         </div>
 
@@ -187,11 +195,11 @@ const PromoterDashboard = () => {
             <div className="overflow-x-auto">
               <table className="w-full text-sm">
                 <thead>
-                  <tr className="border-b border-border">
-                    <th className="text-left py-3 px-4 font-medium text-muted-foreground">User Email</th>
-                    <th className="text-left py-3 px-4 font-medium text-muted-foreground">Signup Date</th>
-                    <th className="text-left py-3 px-4 font-medium text-muted-foreground">Premium Status</th>
-                    <th className="text-left py-3 px-4 font-medium text-muted-foreground">Premium Purchase Date</th>
+                  <tr className="border-b border-border/60 bg-secondary/30">
+                    <th className="px-5 py-4 text-xs font-extrabold text-foreground uppercase tracking-widest text-left">User Email</th>
+                    <th className="px-4 py-4 text-xs font-extrabold text-foreground uppercase tracking-widest text-left">Signup Date</th>
+                    <th className="px-4 py-4 text-xs font-extrabold text-foreground uppercase tracking-widest text-left">Premium Status</th>
+                    <th className="px-4 py-4 text-xs font-extrabold text-foreground uppercase tracking-widest text-left">Premium Purchase Date</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -257,12 +265,17 @@ function StatCard({
   loading: boolean;
 }) {
   return (
-    <div className="glass-card p-4">
-      <div className="flex items-center gap-2 mb-2">
-        <Icon className="h-4 w-4 text-primary" />
-        <span className="text-xs text-muted-foreground">{label}</span>
+    <div className="glass-card p-5 group hover:shadow-md transition-all relative overflow-hidden">
+      <div className="absolute top-0 right-0 w-24 h-24 bg-primary/5 rounded-full blur-xl -mr-12 -mt-12 group-hover:bg-primary/10 transition-colors pointer-events-none" />
+      <div className="flex items-center gap-2 mb-3 relative z-10">
+        <div className="p-1.5 rounded-md bg-primary/10">
+          <Icon className="h-4 w-4 text-primary" />
+        </div>
+        <span className="text-xs font-bold uppercase tracking-widest text-muted-foreground">{label}</span>
       </div>
-      <p className="text-xl font-semibold text-foreground">{loading ? "..." : value}</p>
+      <p className="text-2xl font-extrabold text-foreground tracking-tight relative z-10">
+        {loading ? "..." : value}
+      </p>
     </div>
   );
 }

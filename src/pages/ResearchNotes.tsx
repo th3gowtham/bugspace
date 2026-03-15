@@ -49,8 +49,8 @@ function wrapSelection(
 function insertLinePrefix(ta: HTMLTextAreaElement, prefix: string): string {
   const { selectionStart: s, value: v } = ta;
   const lineStart = v.lastIndexOf("\n", s - 1) + 1;
-  const lineEnd   = v.indexOf("\n", s);
-  const end       = lineEnd === -1 ? v.length : lineEnd;
+  const lineEnd = v.indexOf("\n", s);
+  const end = lineEnd === -1 ? v.length : lineEnd;
   return v.slice(0, lineStart) + prefix + v.slice(lineStart, end) + v.slice(end);
 }
 
@@ -68,7 +68,7 @@ function InlineRename({
       value={v}
       onChange={(e) => setV(e.target.value)}
       onKeyDown={(e) => {
-        if (e.key === "Enter")  { e.preventDefault(); onSave(v); }
+        if (e.key === "Enter") { e.preventDefault(); onSave(v); }
         if (e.key === "Escape") { e.preventDefault(); onCancel(); }
       }}
       onBlur={() => onSave(v)}
@@ -100,10 +100,10 @@ function ShareModal({ folderId, folderName, ownerEmail, sentShares, onClose, onS
   onShareRemoved: (id: string) => void;
   onPermissionChanged: (id: string, p: "viewer" | "editor") => void;
 }) {
-  const [tab,         setTab]    = useState<"invite" | "manage">("invite");
+  const [tab, setTab] = useState<"invite" | "manage">("invite");
   const [targetEmail, setTarget] = useState("");
-  const [permission,  setPerm]   = useState<"viewer" | "editor">("viewer");
-  const [sending,     setSending] = useState(false);
+  const [permission, setPerm] = useState<"viewer" | "editor">("viewer");
+  const [sending, setSending] = useState(false);
 
   const folderShares = sentShares.filter((s) => s.folderId === folderId);
 
@@ -127,14 +127,15 @@ function ShareModal({ folderId, folderName, ownerEmail, sentShares, onClose, onS
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 px-4">
-      <div className="glass-card w-full max-w-md p-5 space-y-4 rounded-xl">
-        <div className="flex items-center justify-between">
-          <h3 className="font-semibold text-foreground flex items-center gap-2 text-sm">
-            <Share2 className="h-4 w-4 text-primary" />
-            Share &ldquo;{folderName}&rdquo;
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/65 px-4 backdrop-blur-md animate-in fade-in duration-200">
+      <div className="glass-card w-full max-w-md p-6 space-y-5 rounded-2xl shadow-2xl animate-in zoom-in-95 duration-300 relative overflow-hidden">
+        <div className="absolute top-0 right-0 w-32 h-32 bg-primary/10 rounded-full blur-2xl -mr-16 -mt-16 pointer-events-none" />
+        <div className="flex items-center justify-between relative z-10">
+          <h3 className="font-extrabold text-foreground flex items-center gap-2 text-lg tracking-tight">
+            <Share2 className="h-5 w-5 text-primary" />
+            Share "{folderName}"
           </h3>
-          <button onClick={onClose} className="text-muted-foreground hover:text-foreground transition-colors">
+          <button onClick={onClose} className="p-1.5 rounded-full text-muted-foreground hover:text-foreground hover:bg-secondary/80 transition-all">
             <X className="h-4 w-4" />
           </button>
         </div>
@@ -143,9 +144,8 @@ function ShareModal({ folderId, folderName, ownerEmail, sentShares, onClose, onS
         <div className="flex gap-1 rounded-md bg-secondary p-1">
           {(["invite", "manage"] as const).map((t) => (
             <button key={t} onClick={() => setTab(t)}
-              className={`flex-1 rounded py-1 text-xs font-medium transition-colors ${
-                tab === t ? "bg-background text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"
-              }`}>
+              className={`flex-1 rounded py-1 text-xs font-medium transition-colors ${tab === t ? "bg-background text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"
+                }`}>
               {t === "invite" ? "Invite" : `Manage Access (${folderShares.length})`}
             </button>
           ))}
@@ -180,11 +180,10 @@ function ShareModal({ folderId, folderName, ownerEmail, sentShares, onClose, onS
             ) : folderShares.map((s) => (
               <div key={s.shareId} className="flex items-center gap-2 rounded-md bg-secondary/50 px-3 py-2">
                 <span className="flex-1 text-sm text-foreground truncate min-w-0">{s.targetEmail}</span>
-                <span className={`text-xs px-1.5 py-0.5 rounded shrink-0 ${
-                  s.status === "accepted" ? "bg-green-500/10 text-green-400" :
-                  s.status === "rejected" ? "bg-red-500/10 text-red-400" :
-                  "bg-amber-500/10 text-amber-400"
-                }`}>{s.status}</span>
+                <span className={`text-xs px-1.5 py-0.5 rounded shrink-0 ${s.status === "accepted" ? "bg-green-500/10 text-green-400" :
+                    s.status === "rejected" ? "bg-red-500/10 text-red-400" :
+                      "bg-amber-500/10 text-amber-400"
+                  }`}>{s.status}</span>
                 <select value={s.permission}
                   onChange={async (e) => {
                     const p = e.target.value as "viewer" | "editor";
@@ -217,43 +216,43 @@ const ResearchNotes = () => {
   const email = firebaseUser?.email ?? "";
 
   // ── Core data ──────────────────────────────────────────────────────────────
-  const [folders,          setFolders]          = useState<NoteFolder[]>([]);
-  const [pagesByFolder,    setPagesByFolder]     = useState<Record<string, NotePage[]>>({});
-  const [loading,          setLoading]           = useState(true);
+  const [folders, setFolders] = useState<NoteFolder[]>([]);
+  const [pagesByFolder, setPagesByFolder] = useState<Record<string, NotePage[]>>({});
+  const [loading, setLoading] = useState(true);
 
   // ── Selection & sidebar mode ───────────────────────────────────────────────
-  const [sidebarTab,       setSidebarTab]        = useState<"mine" | "shared">("mine");
-  const [activeFolderId,   setActiveFolderId]    = useState<string | null>(null);
-  const [activePageId,     setActivePageId]      = useState<string | null>(null);
+  const [sidebarTab, setSidebarTab] = useState<"mine" | "shared">("mine");
+  const [activeFolderId, setActiveFolderId] = useState<string | null>(null);
+  const [activePageId, setActivePageId] = useState<string | null>(null);
 
   // ── Sharing data ───────────────────────────────────────────────────────────
-  const [sentShares,       setSentShares]        = useState<NoteShare[]>([]);
-  const [receivedShares,   setReceivedShares]    = useState<NoteShare[]>([]);
-  const [sharedPagesCache, setSharedPagesCache]  = useState<Record<string, NotePage[]>>({});
-  const [showShareModal,   setShowShareModal]    = useState(false);
+  const [sentShares, setSentShares] = useState<NoteShare[]>([]);
+  const [receivedShares, setReceivedShares] = useState<NoteShare[]>([]);
+  const [sharedPagesCache, setSharedPagesCache] = useState<Record<string, NotePage[]>>({});
+  const [showShareModal, setShowShareModal] = useState(false);
 
   // ── Editor ─────────────────────────────────────────────────────────────────
-  const [editorContent,  setEditorContent]  = useState("");
-  const [savedContent,   setSavedContent]   = useState("");
-  const [saveStatus,     setSaveStatus]     = useState<"idle" | "saving" | "saved" | "unsaved">("idle");
+  const [editorContent, setEditorContent] = useState("");
+  const [savedContent, setSavedContent] = useState("");
+  const [saveStatus, setSaveStatus] = useState<"idle" | "saving" | "saved" | "unsaved">("idle");
 
   // ── Rename UI ──────────────────────────────────────────────────────────────
-  const [renamingFolderId,  setRenamingFolderId]  = useState<string | null>(null);
-  const [renamingPageId,    setRenamingPageId]    = useState<string | null>(null);
+  const [renamingFolderId, setRenamingFolderId] = useState<string | null>(null);
+  const [renamingPageId, setRenamingPageId] = useState<string | null>(null);
   const [renamingPageTitle, setRenamingPageTitle] = useState("");
 
   // ── Create UI ──────────────────────────────────────────────────────────────
   const [newFolderMode, setNewFolderMode] = useState(false);
   const [newFolderName, setNewFolderName] = useState("");
-  const [newPageMode,   setNewPageMode]   = useState(false);
-  const [newPageTitle,  setNewPageTitle]  = useState("");
+  const [newPageMode, setNewPageMode] = useState(false);
+  const [newPageTitle, setNewPageTitle] = useState("");
 
   // ── Search ─────────────────────────────────────────────────────────────────
-  const [showSearch,  setShowSearch]  = useState(false);
+  const [showSearch, setShowSearch] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
 
-  const taRef           = useRef<HTMLTextAreaElement>(null);
-  const autoSaveRef     = useRef<ReturnType<typeof setInterval> | null>(null);
+  const taRef = useRef<HTMLTextAreaElement>(null);
+  const autoSaveRef = useRef<ReturnType<typeof setInterval> | null>(null);
   // BUG FIX: track last loaded page so save-updates don't clobber editor content
   const loadedPageIdRef = useRef<string | null>(null);
 
@@ -280,7 +279,7 @@ const ResearchNotes = () => {
     fetchPages(email, activeFolderId)
       .then((pages) => setPagesByFolder((p) => ({ ...p, [activeFolderId]: pages })))
       .catch(() => toast.error("Failed to load pages."));
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [email, activeFolderId, sidebarTab]);
 
   // ── BUG FIX: load page content only when changing pages ───────────────────
@@ -288,7 +287,7 @@ const ResearchNotes = () => {
     if (!activePageId || !activeFolderId) return;
     if (loadedPageIdRef.current === activePageId) return; // already loaded – skip
     const cache = sidebarTab === "shared" ? sharedPagesCache : pagesByFolder;
-    const page  = (cache[activeFolderId] ?? []).find((p) => p.pageId === activePageId);
+    const page = (cache[activeFolderId] ?? []).find((p) => p.pageId === activePageId);
     if (!page) return; // cache not ready yet – retries when cache updates
     loadedPageIdRef.current = activePageId;
     const decoded = decodeContent(page.content);
@@ -347,22 +346,22 @@ const ResearchNotes = () => {
   );
 
   // ── Derived sharing ───────────────────────────────────────────────────────
-  const pendingShares  = receivedShares.filter((s) => s.status === "pending");
+  const pendingShares = receivedShares.filter((s) => s.status === "pending");
   const acceptedShares = receivedShares.filter((s) => s.status === "accepted" && s.folderId);
-  const activeShare    = sidebarTab === "shared"
+  const activeShare = sidebarTab === "shared"
     ? receivedShares.find((s) => s.folderId === activeFolderId && s.status === "accepted")
     : null;
   const isReadOnly = activeShare?.permission === "viewer";
 
   // ── Current page list (own or shared) ────────────────────────────────────
-  const currentPages  = sidebarTab === "shared"
+  const currentPages = sidebarTab === "shared"
     ? (activeFolderId ? (sharedPagesCache[activeFolderId] ?? []) : [])
     : (activeFolderId ? (pagesByFolder[activeFolderId] ?? []) : []);
-  const activePage    = activePageId ? currentPages.find((p) => p.pageId === activePageId) ?? null : null;
-  const activeFolder  = activeFolderId
+  const activePage = activePageId ? currentPages.find((p) => p.pageId === activePageId) ?? null : null;
+  const activeFolder = activeFolderId
     ? (sidebarTab === "shared"
-        ? (() => { const s = acceptedShares.find((x) => x.folderId === activeFolderId); return s ? { folderId: activeFolderId, name: s.folderName } : null; })()
-        : folders.find((f) => f.folderId === activeFolderId) ?? null)
+      ? (() => { const s = acceptedShares.find((x) => x.folderId === activeFolderId); return s ? { folderId: activeFolderId, name: s.folderName } : null; })()
+      : folders.find((f) => f.folderId === activeFolderId) ?? null)
     : null;
 
   // ── Folder actions ───────────────────────────────────────────────────────────
@@ -490,13 +489,13 @@ const ResearchNotes = () => {
     if (!ta) return;
     let val = editorContent;
     switch (action) {
-      case "bold":      val = wrapSelection(ta, "**", "**", "bold text"); break;
-      case "italic":    val = wrapSelection(ta, "_", "_", "italic text"); break;
-      case "code":      val = wrapSelection(ta, "`", "`", "code"); break;
+      case "bold": val = wrapSelection(ta, "**", "**", "bold text"); break;
+      case "italic": val = wrapSelection(ta, "_", "_", "italic text"); break;
+      case "code": val = wrapSelection(ta, "`", "`", "code"); break;
       case "codeblock": val = wrapSelection(ta, "```\n", "\n```", "code block"); break;
-      case "link":      val = wrapSelection(ta, "[", "](url)", "link text"); break;
-      case "heading":   val = insertLinePrefix(ta, "## "); break;
-      case "list":      val = insertLinePrefix(ta, "- "); break;
+      case "link": val = wrapSelection(ta, "[", "](url)", "link text"); break;
+      case "heading": val = insertLinePrefix(ta, "## "); break;
+      case "list": val = insertLinePrefix(ta, "- "); break;
     }
     setEditorContent(val);
     ta.focus();
@@ -505,48 +504,56 @@ const ResearchNotes = () => {
   // ── Render ───────────────────────────────────────────────────────────────────
 
   return (
-    <div className="min-h-screen flex flex-col bg-background">
+    <div className="min-h-screen flex flex-col bg-background selection:bg-primary/20 relative overflow-hidden">
+      {/* Background decorations */}
+      <div className="absolute inset-0 bg-grid-white/[0.02] bg-[size:32px] pointer-events-none" />
+      <div className="absolute top-[20%] left-[-5%] w-[500px] h-[500px] bg-primary/10 rounded-full blur-[120px] pointer-events-none opacity-50" />
+      <div className="absolute bottom-[-10%] right-[-5%] w-[400px] h-[400px] bg-amber-500/10 rounded-full blur-[100px] pointer-events-none opacity-40" />
+
       <Navbar />
 
-      <div className="flex-1 container py-6">
+      <div className="flex-1 container py-8 relative z-10 animate-in fade-in slide-in-from-bottom-4 duration-700">
         {/* Page header */}
-        <div className="flex items-center justify-between mb-4 gap-4">
-          <div className="flex items-center gap-2">
-            <BookOpen className="h-5 w-5 text-primary" />
-            <h1 className="text-xl font-bold text-foreground">Research Notes</h1>
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-8 gap-4">
+          <div className="flex items-center gap-3">
+            <div className="p-2.5 rounded-xl bg-primary/10 border border-primary/20 shadow-inner">
+              <BookOpen className="h-6 w-6 text-primary" />
+            </div>
+            <div>
+              <h1 className="text-2xl font-extrabold text-foreground tracking-tight">Research Notes</h1>
+              <p className="text-sm text-muted-foreground font-medium">Capture, organize, and share intel securely.</p>
+            </div>
           </div>
           <div className="flex items-center gap-2">
             {/* Save indicator */}
             {activePageId && (
-              <span className={`text-xs transition-colors ${
-                saveStatus === "saving"  ? "text-muted-foreground" :
-                saveStatus === "saved"   ? "text-green-400" :
-                saveStatus === "unsaved" ? "text-red-400" :
-                hasUnsaved               ? "text-amber-400" : "text-muted-foreground/40"
-              }`}>
-                {saveStatus === "saving"  ? "Saving…" :
-                 saveStatus === "saved"   ? <span className="flex items-center gap-1"><Check className="h-3 w-3" />All changes saved</span> :
-                 saveStatus === "unsaved" ? "Save failed" :
-                 hasUnsaved              ? (
-                   <span
-                     className="flex items-center gap-1 cursor-pointer hover:text-amber-300"
-                     onClick={() => activePageId && doSave(editorContent, activePageId)}
-                   >
-                     <Save className="h-3 w-3" />Unsaved · click to save
-                   </span>
-                 ) : null}
+              <span className={`text-xs transition-colors ${saveStatus === "saving" ? "text-muted-foreground" :
+                  saveStatus === "saved" ? "text-green-400" :
+                    saveStatus === "unsaved" ? "text-red-400" :
+                      hasUnsaved ? "text-amber-400" : "text-muted-foreground/40"
+                }`}>
+                {saveStatus === "saving" ? "Saving…" :
+                  saveStatus === "saved" ? <span className="flex items-center gap-1"><Check className="h-3 w-3" />All changes saved</span> :
+                    saveStatus === "unsaved" ? "Save failed" :
+                      hasUnsaved ? (
+                        <span
+                          className="flex items-center gap-1 cursor-pointer hover:text-amber-300"
+                          onClick={() => activePageId && doSave(editorContent, activePageId)}
+                        >
+                          <Save className="h-3 w-3" />Unsaved · click to save
+                        </span>
+                      ) : null}
               </span>
             )}
             <button
               onClick={() => setShowSearch((v) => !v)}
-              className={`flex items-center gap-1.5 rounded-md border px-3 py-1.5 text-sm transition-colors ${
-                showSearch
-                  ? "border-primary bg-primary/10 text-primary"
-                  : "border-border text-muted-foreground hover:text-foreground hover:bg-secondary"
-              }`}
+              className={`flex items-center gap-2 rounded-xl border px-4 py-2.5 text-sm font-bold transition-all shadow-sm ${showSearch
+                  ? "border-primary/50 bg-primary/10 text-primary hover:bg-primary/20"
+                  : "border-border/60 bg-card text-muted-foreground hover:text-foreground hover:bg-secondary hover:border-foreground/20"
+                }`}
             >
-              <Search className="h-3.5 w-3.5" />
-              Search
+              <Search className="h-4 w-4" />
+              {showSearch ? "Close search" : "Search intel"}
             </button>
           </div>
         </div>
@@ -604,23 +611,26 @@ const ResearchNotes = () => {
 
         {/* 3-panel layout */}
         {loading ? (
-          <div className="py-20 text-center text-sm text-muted-foreground">Loading…</div>
+          <div className="py-24 text-center text-muted-foreground flex flex-col items-center justify-center gap-3 animate-pulse">
+            <div className="h-8 w-8 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+            <span className="font-bold">Loading intel…</span>
+          </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-[220px_200px_1fr] border border-border rounded-xl overflow-hidden min-h-[600px]">
+          <div className="glass-card grid grid-cols-1 md:grid-cols-[260px_260px_1fr] overflow-hidden min-h-[70vh] shadow-xl relative">
+            <div className="absolute top-0 right-0 w-64 h-64 bg-primary/5 rounded-full blur-3xl -mr-20 -mt-20 pointer-events-none" />
 
             {/* ═══ LEFT – Folder sidebar ══════════════════════════════════ */}
-            <div className="border-r border-border bg-card/50 flex flex-col">
+            <div className="border-r border-border/40 bg-muted/10 flex flex-col relative z-10 backdrop-blur-sm">
 
               {/* Tab switcher */}
-              <div className="flex border-b border-border">
+              <div className="flex border-b border-border/40 bg-background/50 backdrop-blur-md">
                 {(["mine", "shared"] as const).map((t) => (
                   <button key={t}
                     onClick={() => { setSidebarTab(t); setActiveFolderId(null); setActivePageId(null); loadedPageIdRef.current = null; }}
-                    className={`flex-1 flex items-center justify-center gap-1 py-2.5 text-xs font-medium transition-colors ${
-                      sidebarTab === t ? "bg-primary/10 text-primary border-b-2 border-primary" : "text-muted-foreground hover:text-foreground"
-                    }`}>
+                    className={`flex-1 flex items-center justify-center gap-1.5 py-3 text-xs font-extrabold uppercase tracking-wider transition-all ${sidebarTab === t ? "bg-primary/5 text-primary border-b-2 border-primary shadow-sm" : "text-muted-foreground hover:text-foreground hover:bg-secondary/50"
+                      }`}>
                     {t === "mine" ? (
-                      <><FolderOpen className="h-3 w-3" />My Notes</>
+                      <><FolderOpen className="h-3.5 w-3.5" />My Notes</>
                     ) : (
                       <>
                         <Users className="h-3 w-3" />Shared
@@ -676,11 +686,10 @@ const ResearchNotes = () => {
                       <div
                         key={folder.folderId}
                         onClick={() => handleSelectMyFolder(folder.folderId)}
-                        className={`group flex items-center gap-2 px-3 py-2 cursor-pointer transition-colors ${
-                          activeFolderId === folder.folderId && sidebarTab === "mine"
+                        className={`group flex items-center gap-2 px-3 py-2 cursor-pointer transition-colors ${activeFolderId === folder.folderId && sidebarTab === "mine"
                             ? "bg-primary/10 text-primary"
                             : "text-muted-foreground hover:bg-secondary hover:text-foreground"
-                        }`}
+                          }`}
                       >
                         <FolderOpen className="h-3.5 w-3.5 shrink-0" />
                         {renamingFolderId === folder.folderId ? (
@@ -753,20 +762,18 @@ const ResearchNotes = () => {
                       <div
                         key={s.shareId}
                         onClick={() => handleSelectSharedFolder(s)}
-                        className={`group flex items-center gap-2 px-3 py-2 cursor-pointer transition-colors ${
-                          activeFolderId === s.folderId && sidebarTab === "shared"
+                        className={`group flex items-center gap-2 px-3 py-2 cursor-pointer transition-colors ${activeFolderId === s.folderId && sidebarTab === "shared"
                             ? "bg-primary/10 text-primary"
                             : "text-muted-foreground hover:bg-secondary hover:text-foreground"
-                        }`}
+                          }`}
                       >
                         <FolderOpen className="h-3.5 w-3.5 shrink-0" />
                         <div className="flex-1 min-w-0">
                           <p className="text-sm truncate">{s.folderName}</p>
                           <p className="text-xs text-muted-foreground/60 truncate">{s.ownerEmail}</p>
                         </div>
-                        <span className={`text-xs px-1 py-0.5 rounded shrink-0 ${
-                          s.permission === "editor" ? "bg-blue-500/10 text-blue-400" : "bg-muted/50 text-muted-foreground"
-                        }`}>{s.permission === "editor" ? "Edit" : "View"}</span>
+                        <span className={`text-xs px-1 py-0.5 rounded shrink-0 ${s.permission === "editor" ? "bg-blue-500/10 text-blue-400" : "bg-muted/50 text-muted-foreground"
+                          }`}>{s.permission === "editor" ? "Edit" : "View"}</span>
                       </div>
                     ))}
                   </div>
@@ -775,9 +782,9 @@ const ResearchNotes = () => {
             </div>
 
             {/* ═══ MIDDLE – Pages ════════════════════════════════════════════ */}
-            <div className="border-r border-border bg-card/30 flex flex-col">
-              <div className="flex items-center justify-between px-3 py-2.5 border-b border-border">
-                <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wide truncate">
+            <div className="border-r border-border/40 bg-muted/5 flex flex-col relative z-10 backdrop-blur-sm">
+              <div className="flex items-center justify-between px-4 py-3 border-b border-border/40 bg-background/50">
+                <span className="text-xs font-extrabold text-foreground uppercase tracking-widest truncate">
                   {activeFolder ? activeFolder.name : "Pages"}
                 </span>
                 {activeFolderId && !isReadOnly && (
@@ -821,11 +828,10 @@ const ResearchNotes = () => {
                   <div
                     key={page.pageId}
                     onClick={() => setActivePageId(page.pageId)}
-                    className={`group flex items-center gap-2 px-3 py-2 cursor-pointer transition-colors ${
-                      activePageId === page.pageId
+                    className={`group flex items-center gap-2 px-3 py-2 cursor-pointer transition-colors ${activePageId === page.pageId
                         ? "bg-primary/10 text-primary"
                         : "text-muted-foreground hover:bg-secondary hover:text-foreground"
-                    }`}
+                      }`}
                   >
                     <FileText className="h-3.5 w-3.5 shrink-0" />
                     {renamingPageId === page.pageId ? (
@@ -860,7 +866,7 @@ const ResearchNotes = () => {
             </div>
 
             {/* ═══ RIGHT – Editor ════════════════════════════════════════════ */}
-            <div className="flex flex-col bg-card/20">
+            <div className="flex flex-col bg-background/40 relative z-10 backdrop-blur-sm">
               {!activePage ? (
                 <div className="flex-1 flex items-center justify-center">
                   <div className="text-center space-y-2">
@@ -904,13 +910,13 @@ const ResearchNotes = () => {
                   <div className="flex items-center gap-0.5 px-3 py-1.5 border-b border-border bg-secondary/20 flex-wrap">
                     {!isReadOnly && (
                       <>
-                        <FmtBtn icon={Heading2} title="Heading (## )"       onClick={() => applyFormat("heading")} />
-                        <FmtBtn icon={Bold}     title="Bold (**text**)"      onClick={() => applyFormat("bold")} />
-                        <FmtBtn icon={Italic}   title="Italic (_text_)"      onClick={() => applyFormat("italic")} />
-                        <FmtBtn icon={Code}     title="Inline code (`code`)" onClick={() => applyFormat("code")} />
-                        <FmtBtn icon={Code2}    title="Code block"           onClick={() => applyFormat("codeblock")} />
-                        <FmtBtn icon={Link2}    title="Link [text](url)"     onClick={() => applyFormat("link")} />
-                        <FmtBtn icon={List}     title="List item (- )"       onClick={() => applyFormat("list")} />
+                        <FmtBtn icon={Heading2} title="Heading (## )" onClick={() => applyFormat("heading")} />
+                        <FmtBtn icon={Bold} title="Bold (**text**)" onClick={() => applyFormat("bold")} />
+                        <FmtBtn icon={Italic} title="Italic (_text_)" onClick={() => applyFormat("italic")} />
+                        <FmtBtn icon={Code} title="Inline code (`code`)" onClick={() => applyFormat("code")} />
+                        <FmtBtn icon={Code2} title="Code block" onClick={() => applyFormat("codeblock")} />
+                        <FmtBtn icon={Link2} title="Link [text](url)" onClick={() => applyFormat("link")} />
+                        <FmtBtn icon={List} title="List item (- )" onClick={() => applyFormat("list")} />
                       </>
                     )}
                     <span className="ml-auto text-xs text-muted-foreground/50">Markdown</span>
@@ -930,8 +936,8 @@ const ResearchNotes = () => {
                       }
                       if (e.key === "Tab") {
                         e.preventDefault();
-                        const ta  = e.currentTarget;
-                        const s   = ta.selectionStart;
+                        const ta = e.currentTarget;
+                        const s = ta.selectionStart;
                         const end = ta.selectionEnd;
                         setEditorContent(editorContent.slice(0, s) + "  " + editorContent.slice(end));
                         requestAnimationFrame(() => { ta.selectionStart = ta.selectionEnd = s + 2; });
@@ -946,7 +952,7 @@ const ResearchNotes = () => {
                       "",
                       "Ctrl+S to save · auto-saves every 10 seconds",
                     ].join("\n")}
-                    className={`flex-1 w-full resize-none px-5 py-4 bg-transparent text-sm text-foreground font-mono leading-relaxed placeholder:text-muted-foreground/40 focus:outline-none${isReadOnly ? " cursor-default" : ""}`}
+                    className={`flex-1 w-full resize-none px-8 py-6 bg-transparent text-sm text-foreground font-mono leading-relaxed placeholder:text-muted-foreground/30 focus:outline-none${isReadOnly ? " cursor-default" : ""}`}
                     spellCheck={!isReadOnly}
                   />
                 </>

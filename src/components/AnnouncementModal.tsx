@@ -33,13 +33,13 @@ export function AnnouncementModal({
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
       {/* Overlay */}
       <div
-        className="absolute inset-0 bg-black/60 backdrop-blur-sm"
+        className="absolute inset-0 bg-black/60 backdrop-blur-md animate-in fade-in duration-300"
         onClick={handleDismiss}
         aria-hidden="true"
       />
 
       {/* Modal */}
-      <div className="relative z-10 w-full max-w-md rounded-xl border border-border bg-card shadow-2xl animate-in fade-in zoom-in-95 duration-200">
+      <div className="relative z-10 w-full max-w-md rounded-2xl border border-border/50 bg-card/95 backdrop-blur-sm shadow-2xl animate-in fade-in zoom-in-95 duration-300 ease-out overflow-hidden">
         {/* Header */}
         <div className="flex items-start justify-between gap-3 border-b border-border px-5 py-4">
           <div className="flex items-center gap-2.5">
@@ -58,7 +58,7 @@ export function AnnouncementModal({
           <button
             onClick={handleDismiss}
             disabled={submitting}
-            className="mt-0.5 rounded-md p-1.5 text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground disabled:opacity-50"
+            className="mt-0.5 rounded-full p-2 text-muted-foreground transition-all duration-200 hover:bg-secondary hover:text-foreground hover:rotate-90 active:scale-90 disabled:opacity-50"
             aria-label="Close"
           >
             <X className="h-4 w-4" />
@@ -84,9 +84,9 @@ export function AnnouncementModal({
           <button
             onClick={handleDismiss}
             disabled={submitting}
-            className="rounded-md bg-primary px-5 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90 disabled:opacity-60"
+            className="rounded-xl bg-primary px-6 py-2.5 text-sm font-bold text-primary-foreground transition-all duration-300 hover:bg-primary/90 hover:shadow-md hover:shadow-primary/20 hover:-translate-y-0.5 active:scale-95 disabled:opacity-60 disabled:pointer-events-none"
           >
-            {submitting ? "Saving…" : "OK"}
+            {submitting ? "Saving…" : "Got it"}
           </button>
         </div>
       </div>

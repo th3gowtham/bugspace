@@ -10,7 +10,7 @@ interface FilterPanelProps {
 }
 
 const platforms = ["All", "HackerOne", "Bugcrowd", "Self-Hosted", "Intigriti", "YesWeHack"];
-const statuses  = ["All", "Active", "Paused", "New"];
+const statuses = ["All", "Active", "Paused", "New"];
 
 export function FilterPanel({
   className,
@@ -20,42 +20,50 @@ export function FilterPanel({
   onStatusChange,
 }: FilterPanelProps) {
   return (
-    <aside className={cn("w-64 shrink-0 space-y-6", className)}>
+    <aside className={cn("w-64 shrink-0 space-y-8", className)}>
       <div>
-        <h3 className="text-sm font-semibold text-foreground mb-3 flex items-center gap-2">
+        <h3 className="text-sm font-semibold text-foreground mb-4 flex items-center gap-2">
           <SlidersHorizontal className="h-4 w-4" />
           Filters
         </h3>
       </div>
 
       <FilterSection title="Platform">
-        {platforms.map((p) => (
-          <label key={p} className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground cursor-pointer transition-colors">
-            <input
-              type="radio"
-              name="platform"
-              checked={selectedPlatform === p}
-              onChange={() => onPlatformChange?.(p)}
-              className="accent-primary"
-            />
-            {p}
-          </label>
-        ))}
+        <div className="flex flex-wrap gap-2">
+          {platforms.map((p) => (
+            <button
+              key={p}
+              onClick={() => onPlatformChange?.(p)}
+              className={cn(
+                "px-3 py-1.5 rounded-full text-xs font-medium transition-all duration-200 border",
+                selectedPlatform === p
+                  ? "bg-primary text-primary-foreground border-primary shadow-sm scale-105"
+                  : "bg-background text-muted-foreground border-border hover:border-primary/50 hover:text-foreground"
+              )}
+            >
+              {p}
+            </button>
+          ))}
+        </div>
       </FilterSection>
 
       <FilterSection title="Status">
-        {statuses.map((s) => (
-          <label key={s} className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground cursor-pointer transition-colors">
-            <input
-              type="radio"
-              name="status"
-              checked={selectedStatus === s}
-              onChange={() => onStatusChange?.(s)}
-              className="accent-primary"
-            />
-            {s}
-          </label>
-        ))}
+        <div className="flex flex-wrap gap-2">
+          {statuses.map((s) => (
+            <button
+              key={s}
+              onClick={() => onStatusChange?.(s)}
+              className={cn(
+                "px-3 py-1.5 rounded-full text-xs font-medium transition-all duration-200 border",
+                selectedStatus === s
+                  ? "bg-primary text-primary-foreground border-primary shadow-sm scale-105"
+                  : "bg-background text-muted-foreground border-border hover:border-primary/50 hover:text-foreground"
+              )}
+            >
+              {s}
+            </button>
+          ))}
+        </div>
       </FilterSection>
     </aside>
   );
@@ -63,9 +71,9 @@ export function FilterPanel({
 
 function FilterSection({ title, children }: { title: string; children: React.ReactNode }) {
   return (
-    <div className="space-y-2">
-      <h4 className="text-xs font-medium text-muted-foreground uppercase tracking-wider">{title}</h4>
-      <div className="space-y-1.5">{children}</div>
+    <div className="space-y-3">
+      <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">{title}</h4>
+      <div>{children}</div>
     </div>
   );
 }
