@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import { Shield, Mail, AlertCircle, Loader2, CheckCircle, ArrowRight } from "lucide-react";
 import { sendPasswordResetEmail } from "firebase/auth";
 import { auth } from "@/lib/firebase";
+import logoImg from "@/assets/logo.png";
 
 const ForgotPassword = () => {
   const [email, setEmail] = useState("");
@@ -40,8 +41,8 @@ const ForgotPassword = () => {
 
         <div className="w-full max-w-md relative z-10 animate-in fade-in zoom-in-95 duration-700">
           <div className="text-center mb-8">
-            <Link to="/" className="inline-flex items-center justify-center p-4 rounded-3xl bg-primary/10 border border-primary/20 shadow-inner mb-6 group hover:bg-primary/20 transition-colors">
-              <Shield className="h-10 w-10 text-primary group-hover:scale-110 transition-transform" />
+            <Link to="/" className="inline-flex items-center justify-center p-4 rounded-3xl bg-background border border-border/50 shadow-sm mb-6 group hover:shadow-md transition-all overflow-hidden relative">
+              <img src={logoImg} alt="BugSpace Logo" className="h-14 w-auto object-contain group-hover:scale-105 transition-transform relative z-10 dark:invert" />
             </Link>
           </div>
 
@@ -80,8 +81,8 @@ const ForgotPassword = () => {
 
         {/* Logo Header */}
         <div className="text-center mb-8">
-          <Link to="/" className="inline-flex items-center justify-center p-4 rounded-3xl bg-primary/10 border border-primary/20 shadow-inner mb-6 group hover:bg-primary/20 transition-colors">
-            <Shield className="h-10 w-10 text-primary group-hover:scale-110 transition-transform" />
+          <Link to="/" className="inline-flex items-center justify-center p-4 rounded-3xl bg-background border border-border/50 shadow-sm mb-6 group hover:shadow-md transition-all overflow-hidden relative">
+            <img src={logoImg} alt="BugSpace Logo" className="h-14 w-auto object-contain group-hover:scale-105 transition-transform relative z-10 dark:invert" />
           </Link>
           <h1 className="text-3xl font-extrabold text-foreground tracking-tight mb-2">Password Reset</h1>
           <p className="text-base text-muted-foreground font-medium">Reclaim access to your account</p>

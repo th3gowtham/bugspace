@@ -1,5 +1,6 @@
 import { Shield } from "lucide-react";
 import { Link } from "react-router-dom";
+import logoImg from "@/assets/logo.png";
 
 export function Footer() {
   return (
@@ -7,11 +8,10 @@ export function Footer() {
       <div className="container py-10">
         <div className="flex flex-col md:flex-row items-center justify-between gap-6 animate-in fade-in slide-in-from-bottom-4 duration-700">
           <div className="flex items-center gap-3 text-sm text-muted-foreground group">
-            <div className="p-2 rounded-lg bg-primary/10 group-hover:bg-primary/20 transition-colors">
-              <Shield className="h-4 w-4 text-primary group-hover:scale-110 transition-transform" />
-            </div>
-            <span className="font-bold text-foreground tracking-tight">BugSpace</span>
-            <span className="opacity-60">· Security Intelligence Platform</span>
+            <Link to="/" className="p-2 rounded-lg bg-primary/10 group-hover:bg-primary/20 transition-colors block">
+              <img src={logoImg} alt="BugSpace Logo" className="h-7 w-auto object-contain group-hover:scale-110 transition-transform dark:invert" />
+            </Link>
+            <span className="opacity-60 hidden sm:inline">· Security Intelligence Platform</span>
           </div>
           <div className="flex items-center gap-6 text-sm font-medium text-muted-foreground">
             <Link to="/browse" className="hover:text-foreground hover:-translate-y-0.5 transition-all">Programs</Link>

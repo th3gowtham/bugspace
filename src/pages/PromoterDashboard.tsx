@@ -9,6 +9,7 @@ import {
   getPromoterSession,
 } from "@/lib/promoterService";
 import type { PromoterReferralRecord } from "@/types/promoter";
+import logoImg from "@/assets/logo.png";
 
 const PAGE_SIZE = 10;
 
@@ -101,9 +102,8 @@ const PromoterDashboard = () => {
 
       <header className="border-b border-border/40 bg-background/80 backdrop-blur-md sticky top-0 z-50">
         <div className="container h-16 flex items-center justify-between">
-          <Link to="/" className="inline-flex items-center gap-2 font-bold text-lg text-foreground tracking-tight hover:opacity-80 transition-opacity">
-            <Shield className="h-6 w-6 text-primary" />
-            BugSpace
+          <Link to="/" className="inline-flex items-center group transition-transform hover:scale-105">
+            <img src={logoImg} alt="BugSpace Logo" className="h-10 w-auto transition-transform group-hover:scale-110 dark:invert" />
           </Link>
           <div className="flex items-center gap-4">
             <span className="hidden sm:inline text-sm font-medium text-muted-foreground">

@@ -6,6 +6,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { signOut } from "@/lib/authService";
 import { getRedirectPath } from "@/lib/authService";
 import { useTheme } from "@/contexts/ThemeContext";
+import logoImg from "@/assets/logo.png";
 
 export function Navbar() {
   const location = useLocation();
@@ -38,9 +39,8 @@ export function Navbar() {
   return (
     <header className="sticky top-0 z-50 w-full border-b border-border bg-background/80 backdrop-blur-md">
       <div className="container flex h-14 items-center justify-between">
-        <Link to="/" className="flex items-center gap-2 font-bold text-lg text-foreground group transition-transform hover:scale-105">
-          <Shield className="h-5 w-5 text-primary transition-transform group-hover:rotate-12" />
-          BugSpace
+        <Link to="/" className="flex items-center gap-2 group transition-transform hover:scale-105">
+          <img src={logoImg} alt="BugSpace Logo" className="h-10 w-auto transition-transform group-hover:scale-110 dark:invert" />
         </Link>
 
         {/* Desktop nav */}
@@ -61,7 +61,7 @@ export function Navbar() {
               location.pathname === "/premium" ? "text-foreground after:w-full" : "text-muted-foreground"
             )}
           >
-            <span className="text-amber-500 transition-transform duration-300 group-hover:scale-125 group-hover:rotate-12">★</span>
+            <span className="text-amber-500 transition-transform duration-300 group-hover:scale-125 group-hover:rotate-12"></span>
             Premium
           </Link>
           {user && (
@@ -94,7 +94,7 @@ export function Navbar() {
                 location.pathname === "/bounty-tracker" ? "text-foreground after:w-full" : "text-muted-foreground"
               )}
             >
-              <span className="text-amber-500 transition-transform duration-300 group-hover:scale-125 group-hover:rotate-12">★</span>
+              <span className="text-amber-500 transition-transform duration-300 group-hover:scale-125 group-hover:rotate-12"></span>
               Bounty Tracker
             </Link>
           )}
@@ -106,7 +106,7 @@ export function Navbar() {
                 location.pathname === "/exclusive-bugs" ? "text-foreground after:w-full" : "text-muted-foreground"
               )}
             >
-              <span className="text-amber-500 transition-transform duration-300 group-hover:scale-125 group-hover:rotate-12">★</span>
+              <span className="text-amber-500 transition-transform duration-300 group-hover:scale-125 group-hover:rotate-12"></span>
               Exclusive Bugs
             </Link>
           )}
@@ -201,18 +201,18 @@ export function Navbar() {
 
       {/* Mobile nav */}
       {mobileOpen && (
-        <div className="md:hidden border-t border-border bg-background p-4 space-y-3 animate-fade-in">
+        <div className="md:hidden absolute top-full right-2 top-15 rounded-[10px] border-b border-border bg-background/95 backdrop-blur-md p-8 space-y-4 animate-in slide-in-from-top-4 fade-in duration-300 shadow-xl z-50">
           <Link
             to="/browse"
             onClick={() => setMobileOpen(false)}
-            className="block text-sm font-medium text-muted-foreground hover:text-foreground"
+            className="block text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
           >
             Browse Programs
           </Link>
           <Link
             to="/premium"
             onClick={() => setMobileOpen(false)}
-            className="flex items-center gap-1 text-sm font-medium text-muted-foreground hover:text-foreground"
+            className="flex items-center gap-1.5 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
           >
             <span className="text-amber-500">★</span>
             Premium
@@ -221,7 +221,7 @@ export function Navbar() {
             <Link
               to={getDashboardLink()}
               onClick={() => setMobileOpen(false)}
-              className="block text-sm font-medium text-muted-foreground hover:text-foreground"
+              className="block text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
             >
               Dashboard
             </Link>
@@ -230,7 +230,7 @@ export function Navbar() {
             <Link
               to="/notes"
               onClick={() => setMobileOpen(false)}
-              className="block text-sm font-medium text-muted-foreground hover:text-foreground"
+              className="block text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
             >
               Notes
             </Link>
@@ -239,7 +239,7 @@ export function Navbar() {
             <Link
               to="/bounty-tracker"
               onClick={() => setMobileOpen(false)}
-              className="flex items-center gap-1 text-sm font-medium text-muted-foreground hover:text-foreground"
+              className="flex items-center gap-1.5 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
             >
               <span className="text-amber-500">★</span>
               Bounty Tracker
@@ -249,7 +249,7 @@ export function Navbar() {
             <Link
               to="/exclusive-bugs"
               onClick={() => setMobileOpen(false)}
-              className="flex items-center gap-1 text-sm font-medium text-muted-foreground hover:text-foreground"
+              className="flex items-center gap-1.5 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
             >
               <span className="text-amber-500">★</span>
               Exclusive Bugs
@@ -259,7 +259,7 @@ export function Navbar() {
           <button
             onClick={toggleTheme}
             aria-label={theme === "dark" ? "Switch to light mode" : "Switch to dark mode"}
-            className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground"
+            className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors"
           >
             {theme === "dark" ? (
               <><Sun className="h-4 w-4" /> Light Mode</>
@@ -268,18 +268,18 @@ export function Navbar() {
             )}
           </button>
 
-          <div className="pt-3 border-t border-border space-y-2">
+          <div className="pt-4 mt-2 border-t border-border space-y-3">
             {user ? (
               <>
-                <div className="flex items-center gap-2 px-2 py-1">
-                  <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center">
+                <div className="flex items-center gap-3 px-2 py-1.5 bg-secondary/30 rounded-lg">
+                  <div className="h-9 w-9 rounded-full bg-primary/10 flex items-center justify-center">
                     <User className="h-4 w-4 text-primary" />
                   </div>
-                  <div className="flex flex-col">
-                    <span className="text-sm font-medium text-foreground">
+                  <div className="flex flex-col min-w-0">
+                    <span className="text-sm font-semibold text-foreground truncate">
                       {user.userData?.fullName || user.email}
                     </span>
-                    <span className="text-xs text-muted-foreground">{getRoleLabel()}</span>
+                    <span className="text-xs text-muted-foreground font-medium">{getRoleLabel()}</span>
                   </div>
                 </div>
                 <button
@@ -287,17 +287,29 @@ export function Navbar() {
                     setMobileOpen(false);
                     handleSignOut();
                   }}
-                  className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground"
+                  className="flex items-center gap-2 text-sm text-muted-foreground hover:text-destructive w-full px-2 py-1.5 rounded-lg transition-colors border border-transparent hover:border-destructive/20 hover:bg-destructive/5"
                 >
                   <LogOut className="h-4 w-4" />
                   Sign Out
                 </button>
               </>
             ) : (
-              <>
-                <Link to="/login" onClick={() => setMobileOpen(false)} className="block text-sm text-muted-foreground">Sign In</Link>
-                <Link to="/register" onClick={() => setMobileOpen(false)} className="block text-sm font-medium text-primary">Get Started</Link>
-              </>
+              <div className="flex flex-col gap-2">
+                <Link
+                  to="/login"
+                  onClick={() => setMobileOpen(false)}
+                  className="w-full text-center py-2 text-sm font-semibold text-foreground border border-border rounded-xl transition-colors hover:bg-secondary"
+                >
+                  Sign In
+                </Link>
+                <Link
+                  to="/register"
+                  onClick={() => setMobileOpen(false)}
+                  className="w-full text-center py-2 text-sm font-bold text-primary-foreground bg-primary rounded-xl transition-colors hover:bg-primary/90 shadow-md"
+                >
+                  Get Started
+                </Link>
+              </div>
             )}
           </div>
         </div>

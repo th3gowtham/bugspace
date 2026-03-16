@@ -2,6 +2,7 @@ import { FormEvent, useEffect, useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { AlertCircle, Loader2, Megaphone, Shield } from "lucide-react";
 import { getPromoterSession, loginPromoter } from "@/lib/promoterService";
+import logoImg from "@/assets/logo.png";
 
 const PromoterLogin = () => {
   const navigate = useNavigate();
@@ -47,15 +48,10 @@ const PromoterLogin = () => {
 
       <div className="w-full max-w-md relative z-10 animate-in fade-in zoom-in-95 duration-500">
         <div className="text-center mb-8">
-          <Link to="/" className="inline-flex items-center gap-2 group">
-            <div className="p-2 rounded-xl bg-primary/10 group-hover:bg-primary/20 transition-colors">
-              <Shield className="h-6 w-6 text-primary" />
-            </div>
-            <span className="text-3xl font-extrabold tracking-tight text-foreground">
-              BugSpace<span className="text-primary">.</span>
-            </span>
+          <Link to="/" className="inline-flex items-center justify-center p-4 rounded-3xl bg-background border border-border/50 shadow-sm group hover:shadow-md transition-all">
+            <img src={logoImg} alt="BugSpace Logo" className="h-14 w-auto object-contain transition-transform group-hover:scale-105 dark:invert" />
           </Link>
-          <p className="mt-3 text-sm font-medium text-muted-foreground">Promoter portal sign in</p>
+          <p className="mt-4 text-sm font-medium text-muted-foreground">Promoter portal sign in</p>
         </div>
 
         <div className="glass-card p-8 space-y-6 shadow-2xl relative overflow-hidden">

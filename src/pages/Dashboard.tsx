@@ -135,16 +135,23 @@ const Dashboard = () => {
         </div>
       )}
 
-      <div className="container flex-1 py-10">
-        {/* Page header with notification bell */}
-        <div className="flex items-center justify-between mb-10">
-          <div>
-            <h1 className="text-3xl font-extrabold tracking-tight text-foreground">Dashboard</h1>
-            <p className="text-muted-foreground mt-1">Manage your bookmarks, referrals, and settings.</p>
+      {/* Hero Section */}
+      <div className="relative border-b border-border/40 bg-muted/10 overflow-hidden">
+        <div className="absolute inset-0 bg-grid-white/[0.02] bg-[size:32px]" />
+        <div className="absolute inset-0 bg-gradient-to-t from-background to-transparent" />
+
+        <div className="container relative pt-12 pb-10 flex flex-col sm:flex-row sm:items-start justify-between gap-6">
+          <div className="max-w-2xl text-left animate-in fade-in slide-in-from-bottom-4 duration-500">
+            <h1 className="text-4xl sm:text-5xl font-black tracking-tight text-foreground mb-4">
+              Dash<span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-blue-500">board</span>
+            </h1>
+            <p className="text-lg text-muted-foreground leading-relaxed">
+              Manage your bookmarked programs, track exclusive vulnerabilities, and review your latest updates.
+            </p>
           </div>
 
           {/* Bell */}
-          <div ref={bellRef} className="relative z-50">
+          <div ref={bellRef} className="relative z-2 shrink-0 mt-2 animate-in fade-in zoom-in-95 duration-500 delay-100 fill-mode-both">
             <button
               onClick={() => setBellOpen((o) => !o)}
               className="relative flex h-10 w-10 items-center justify-center rounded-full border border-border/50 bg-card hover:bg-secondary/80 text-foreground transition-all duration-200 hover:shadow-md"
@@ -233,11 +240,13 @@ const Dashboard = () => {
             )}
           </div>
         </div>
+      </div>
 
-        <div className="flex flex-col lg:flex-row gap-8 items-start">
+      <div className="container flex-1 py-10 relative z-10">
+        <div className="flex flex-col lg:flex-row gap-10 items-start">
           {/* Sidebar Tabs */}
-          <aside className="w-full lg:w-64 shrink-0 lg:sticky lg:top-24 z-10">
-            <div className="glass-card p-2 flex flex-row lg:flex-col gap-1 overflow-x-auto lg:overflow-visible hide-scrollbar rounded-xl">
+          <aside className="w-full lg:w-64 shrink-0 lg:sticky lg:top-28 z-10 animate-in fade-in slide-in-from-left-8 duration-700">
+            <div className="glass-card p-2.5 flex flex-row lg:flex-col gap-1.5 overflow-x-auto lg:overflow-visible hide-scrollbar rounded-2xl shadow-xl bg-background/50 backdrop-blur-xl border-border/60">
               {tabs.map((tab) => {
                 const isActive = activeTab === tab.id;
                 return (
@@ -245,10 +254,10 @@ const Dashboard = () => {
                     key={tab.id}
                     onClick={() => setActiveTab(tab.id)}
                     className={cn(
-                      "shrink-0 flex items-center justify-between gap-3 rounded-lg px-4 py-3 text-sm font-semibold transition-all duration-200",
+                      "shrink-0 flex items-center justify-between gap-3 rounded-xl px-4 py-3.5 text-sm font-bold transition-all duration-300",
                       isActive
-                        ? "bg-primary text-primary-foreground shadow-md"
-                        : "text-muted-foreground hover:bg-secondary hover:text-foreground"
+                        ? "bg-primary text-primary-foreground shadow-lg shadow-primary/20 scale-[1.02]"
+                        : "text-muted-foreground hover:bg-secondary/80 hover:text-foreground hover:scale-[1.01]"
                     )}
                   >
                     <div className="flex items-center gap-3">
@@ -273,10 +282,15 @@ const Dashboard = () => {
           <div className="flex-1 min-w-0 w-full relative z-0">
             {/* ── Bookmarks ─────────────────────────────────────────────────── */}
             {activeTab === "bookmarks" && (
-              <div className="animate-in fade-in slide-in-from-bottom-2 duration-300">
-                <div className="mb-6 flex items-center gap-2 border-b border-border/40 pb-4">
-                  <Bookmark className="h-5 w-5 text-primary" />
-                  <h2 className="text-xl font-bold text-foreground">Bookmarked Programs</h2>
+              <div className="animate-in fade-in slide-in-from-bottom-8 duration-500">
+                <div className="mb-8 flex items-center gap-3 border-b border-border/40 pb-5">
+                  <div className="p-2 rounded-xl bg-primary/10 text-primary">
+                    <Bookmark className="h-5 w-5" />
+                  </div>
+                  <div>
+                    <h2 className="text-2xl font-black tracking-tight text-foreground">Bookmarked Programs</h2>
+                    <p className="text-sm text-muted-foreground mt-0.5">Quick access to your saved targets.</p>
+                  </div>
                 </div>
 
                 {bookmarksLoading ? (
@@ -302,10 +316,15 @@ const Dashboard = () => {
 
             {/* Saved Bugs */}
             {activeTab === "savedbugs" && (
-              <div className="animate-in fade-in slide-in-from-bottom-2 duration-300">
-                <div className="mb-6 flex items-center gap-2 border-b border-border/40 pb-4">
-                  <Bug className="h-5 w-5 text-primary" />
-                  <h2 className="text-xl font-bold text-foreground">Saved Vulnerabilities</h2>
+              <div className="animate-in fade-in slide-in-from-bottom-8 duration-500">
+                <div className="mb-8 flex items-center gap-3 border-b border-border/40 pb-5">
+                  <div className="p-2 rounded-xl bg-primary/10 text-primary">
+                    <Bug className="h-5 w-5" />
+                  </div>
+                  <div>
+                    <h2 className="text-2xl font-black tracking-tight text-foreground">Saved Vulnerabilities</h2>
+                    <p className="text-sm text-muted-foreground mt-0.5">Premium bugs you've collected for research.</p>
+                  </div>
                 </div>
 
                 {savedBugsLoading ? (
@@ -371,10 +390,15 @@ const Dashboard = () => {
 
             {/* ── Recent Updates ────────────────────────────────────────────── */}
             {activeTab === "updates" && (
-              <div className="animate-in fade-in slide-in-from-bottom-2 duration-300">
-                <div className="mb-6 flex items-center gap-2 border-b border-border/40 pb-4">
-                  <Megaphone className="h-5 w-5 text-primary" />
-                  <h2 className="text-xl font-bold text-foreground">Announcements & Updates</h2>
+              <div className="animate-in fade-in slide-in-from-bottom-8 duration-500">
+                <div className="mb-8 flex items-center gap-3 border-b border-border/40 pb-5">
+                  <div className="p-2 rounded-xl bg-primary/10 text-primary">
+                    <Megaphone className="h-5 w-5" />
+                  </div>
+                  <div>
+                    <h2 className="text-2xl font-black tracking-tight text-foreground">Announcements & Updates</h2>
+                    <p className="text-sm text-muted-foreground mt-0.5">Stay up to date with the latest platform news.</p>
+                  </div>
                 </div>
 
                 {announcementsLoading ? (
@@ -438,16 +462,21 @@ const Dashboard = () => {
             )}
 
             {activeTab === "referrals" && (
-              <div className="animate-in fade-in slide-in-from-bottom-2 duration-300">
+              <div className="animate-in fade-in slide-in-from-bottom-8 duration-500">
                 <ReferralDashboard />
               </div>
             )}
 
             {activeTab === "settings" && (
-              <div className="animate-in fade-in slide-in-from-bottom-2 duration-300">
-                <div className="mb-6 flex items-center gap-2 border-b border-border/40 pb-4">
-                  <Settings className="h-5 w-5 text-primary" />
-                  <h2 className="text-xl font-bold text-foreground">Account Settings</h2>
+              <div className="animate-in fade-in slide-in-from-bottom-8 duration-500">
+                <div className="mb-8 flex items-center gap-3 border-b border-border/40 pb-5">
+                  <div className="p-2 rounded-xl bg-primary/10 text-primary">
+                    <Settings className="h-5 w-5" />
+                  </div>
+                  <div>
+                    <h2 className="text-2xl font-black tracking-tight text-foreground">Account Settings</h2>
+                    <p className="text-sm text-muted-foreground mt-0.5">Manage your preferences and profile details.</p>
+                  </div>
                 </div>
 
                 <div className="glass-card p-8 max-w-xl">

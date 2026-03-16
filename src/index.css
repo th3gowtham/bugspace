@@ -121,6 +121,13 @@ html.theme-transitioning::before {
     @apply bg-clip-text text-transparent;
     background-image: linear-gradient(135deg, #22c55e, #3b82f6);
   }
+  .hide-scrollbar {
+    -ms-overflow-style: none; /* IE and Edge */
+    scrollbar-width: none;    /* Firefox */
+  }
+  .hide-scrollbar::-webkit-scrollbar {
+    display: none;            /* Chrome, Safari and Opera */
+  }
   .glass-card {
     @apply bg-card border border-border rounded-lg transition-all duration-200;
   }

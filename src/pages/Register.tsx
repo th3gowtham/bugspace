@@ -1,4 +1,4 @@
-﻿import { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Shield, AlertCircle, Loader2 } from "lucide-react";
 import { signInWithGoogle, getRedirectPath } from "@/lib/authService";
@@ -6,6 +6,7 @@ import { storeRefCodeFromUrl } from "@/lib/referralService";
 import { primePromoterSignupContext, storePromoCodeFromUrl } from "@/lib/promoterService";
 import { useAuth } from "@/contexts/AuthContext";
 import { cn } from "@/lib/utils";
+import logoImg from "@/assets/logo.png";
 
 const Register = () => {
   const [error, setError] = useState<string | null>(null);
@@ -49,8 +50,8 @@ const Register = () => {
 
         {/* Logo Header */}
         <div className="text-center mb-8">
-          <Link to="/" className="inline-flex items-center justify-center p-4 rounded-3xl bg-primary/10 border border-primary/20 shadow-inner mb-6 group hover:bg-primary/20 transition-colors">
-            <Shield className="h-10 w-10 text-primary group-hover:scale-110 transition-transform" />
+          <Link to="/" className="inline-flex items-center justify-center p-4 rounded-3xl bg-background border border-border/50 shadow-sm mb-6 group hover:shadow-md transition-all overflow-hidden relative">
+            <img src={logoImg} alt="BugSpace Logo" className="h-14 w-auto object-contain group-hover:scale-105 transition-transform relative z-10 dark:invert" />
           </Link>
           <h1 className="text-3xl font-extrabold text-foreground tracking-tight mb-2">Join BugSpace</h1>
           <p className="text-base text-muted-foreground font-medium">Create your account and start hunting</p>
