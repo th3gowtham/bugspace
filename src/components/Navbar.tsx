@@ -55,6 +55,15 @@ export function Navbar() {
             Browse Programs
           </Link>
           <Link
+            to="/about"
+            className={cn(
+              "text-sm font-medium transition-colors hover:text-foreground",
+              location.pathname === "/about" ? "text-foreground" : "text-muted-foreground"
+            )}
+          >
+            About
+          </Link>
+          <Link
             to="/premium"
             className={cn(
               "text-sm font-medium transition-colors hover:text-foreground flex items-center gap-1",
@@ -208,6 +217,13 @@ export function Navbar() {
             className="block text-sm font-medium text-muted-foreground hover:text-foreground"
           >
             Browse Programs
+          </Link>
+          <Link
+            to="/about"
+            onClick={() => setMobileOpen(false)}
+            className="block text-sm font-medium text-muted-foreground hover:text-foreground"
+          >
+            About
           </Link>
           <Link
             to="/premium"

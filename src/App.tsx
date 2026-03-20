@@ -33,6 +33,7 @@ import AdminPromoters from "./pages/AdminPromoters";
 import PromoterLogin from "./pages/PromoterLogin";
 import PromoterDashboard from "./pages/PromoterDashboard";
 import NotFound from "./pages/NotFound";
+import AboutUs from "./pages/AboutUs";
 
 // ── Human-readable page names for analytics tracking ─────────────────────────
 function getPageName(pathname: string): string {
@@ -159,6 +160,7 @@ const App = () => (
             <Routes>
               {/* Public routes */}
               <Route path="/" element={<Index />} />
+              <Route path="/about" element={<AboutUs />} />
               <Route path="/browse" element={
                 <ProtectedRoute allowedRoles={["user"]}>
                   <BrowsePrograms />
