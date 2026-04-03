@@ -12,6 +12,7 @@ import {
   updateProgram,
   deleteProgram,
 } from "@/lib/programService";
+import { notifyUsersAboutNewProgram } from "@/lib/emailNotificationService";
 import {
   fetchEmployerBugs,
   fetchCategories,
@@ -331,6 +332,12 @@ const EmployerDashboard = () => {
         // Create new program
         await addProgram(payload, firebaseUser.uid, firebaseUser.email);
         toast.success("Program published successfully!");
+
+        // Send email notifications to opted-in users (fire-and-forget)
+        const description = payload.bountyRange
+          ? `${payload.companyName} · Bounty: ${payload.bountyRange}`
+          : payload.companyName;
+        notifyUsersAboutNewProgram(payload.programName, description);
       }
       setForm(EMPTY_FORM);
       setFormStep(0);
