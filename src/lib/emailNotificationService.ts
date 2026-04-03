@@ -44,7 +44,8 @@ export async function sendProgramNotification(
   totalSent: number;
   totalFailed: number;
   batches: number;
-  errors?: Array<{ batch: number; count: number; error: string }>;
+  elapsedSeconds?: number;
+  failedEmails?: Array<{ email: string; error: string }>;
 }> {
   if (emails.length === 0) {
     return { message: "No emails to send", totalSent: 0, totalFailed: 0, batches: 0 };
