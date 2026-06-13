@@ -330,14 +330,27 @@ const EmployerDashboard = () => {
         toast.success("Program updated successfully!");
       } else {
         // Create new program
-        await addProgram(payload, firebaseUser.uid, firebaseUser.email);
+        const newProgramId = await addProgram(payload, firebaseUser.uid, firebaseUser.email);
         toast.success("Program published successfully!");
 
-        // Send email notifications to opted-in users (fire-and-forget)
+        // Send email notifications to premium users (fire-and-forget)
         const description = payload.bountyRange
           ? `${payload.companyName} · Bounty: ${payload.bountyRange}`
           : payload.companyName;
-        notifyUsersAboutNewProgram(payload.programName, description);
+        notifyUsersAboutNewProgram(
+          {
+            programName:  payload.programName,
+            description,
+            isPremium:    payload.isPremium,
+            companyName:  payload.companyName,
+            platformType: payload.platformType,
+            bountyRange:  payload.bountyRange,
+            status:       payload.status,
+            programUrl:   payload.programUrl,
+            programId:    newProgramId,
+          },
+          firebaseUser.uid
+        );
       }
       setForm(EMPTY_FORM);
       setFormStep(0);

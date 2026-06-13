@@ -1,11 +1,17 @@
-﻿import { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
 import { StatusBadge } from "@/components/Badges";
-import { Shield, Users, BarChart3, Star, Trash2, MinusCircle, Search, DollarSign, TrendingUp, GitBranch, Megaphone, Plus, Pencil, ToggleLeft, ToggleRight, Activity } from "lucide-react";
+import { Shield, Users, BarChart3, Star, Trash2, MinusCircle, Search, DollarSign, TrendingUp, GitBranch, Megaphone, Plus, Pencil, ToggleLeft, ToggleRight, Activity, Mail } from "lucide-react";
 import { collection, getDocs, query, where, orderBy } from "firebase/firestore";
 import { db } from "@/lib/firebase";
+import {
+  fetchEmailCampaigns,
+  getCampaignSummaryStats,
+  type EmailCampaignRecord,
+  type CampaignSummaryStats,
+} from "@/lib/emailCampaignService";
 import {
   fetchAllAnnouncements,
   createAnnouncement,
@@ -126,6 +132,11 @@ const AdminPanel = () => {
   const [annMessage,            setAnnMessage]            = useState("");
   const [annSaving,             setAnnSaving]             = useState(false);
   const [editingAnn,            setEditingAnn]            = useState<Announcement | null>(null);
+
+  // -- email campaigns tab --------------------------------------------------
+  const [emailCampaigns,        setEmailCampaigns]        = useState<EmailCampaignRecord[]>([]);
+  const [campaignsLoading,      setCampaignsLoading]      = useState(false);
+  const [campaignStats,         setCampaignStats]         = useState<CampaignSummaryStats | null>(null);
 
   // â”€â”€ load dashboard stats on mount â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   useEffect(() => {
@@ -370,6 +381,7 @@ const AdminPanel = () => {
     { id: "users",              label: "Users",              icon: Users,     href: undefined },
     { id: "analytics",          label: "Analytics",          icon: BarChart3, href: undefined },
     { id: "premium",            label: "Premium Users",      icon: Star,      href: undefined },
+    { id: "email-campaigns",    label: "Email Campaigns",    icon: Mail,      href: undefined },
     { id: "announcements",      label: "Announcements",      icon: Megaphone, href: undefined },
     { id: "promoters",          label: "Promoter Analytics", icon: Users,     href: "/admin/promoters" },
     { id: "platform-analytics", label: "Platform Analytics", icon: Activity,  href: "/admin/analytics" },
@@ -873,6 +885,29 @@ const AdminPanel = () => {
               </div>
             )}
 
+            {/* ── Email Campaigns ─────────────────────────────────────────── */}
+            {activeTab === "email-campaigns" && (
+              <EmailCampaignsTab
+                campaigns={emailCampaigns}
+                campaignsLoading={campaignsLoading}
+                stats={campaignStats}
+                activePremiumCount={activePremiumCount}
+                onLoad={() => {
+                  setCampaignsLoading(true);
+                  Promise.all([
+                    fetchEmailCampaigns(50),
+                    getCampaignSummaryStats(),
+                  ])
+                    .then(([campaigns, stats]) => {
+                      setEmailCampaigns(campaigns);
+                      setCampaignStats(stats);
+                    })
+                    .catch(() => {})
+                    .finally(() => setCampaignsLoading(false));
+                }}
+              />
+            )}
+
           </div>
         </div>
       </div>
@@ -880,5 +915,153 @@ const AdminPanel = () => {
     </div>
   );
 };
+
+// ─── Email Campaigns Tab Component ────────────────────────────────────────────
+
+function EmailCampaignsTab({
+  campaigns,
+  campaignsLoading,
+  stats,
+  activePremiumCount,
+  onLoad,
+}: {
+  campaigns: EmailCampaignRecord[];
+  campaignsLoading: boolean;
+  stats: CampaignSummaryStats | null;
+  activePremiumCount: number | null;
+  onLoad: () => void;
+}) {
+  useEffect(() => {
+    onLoad();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  const statCards = [
+    {
+      label: "Premium Users",
+      value: activePremiumCount === null ? "…" : String(activePremiumCount),
+      icon: Star,
+      color: "text-amber-500",
+    },
+    {
+      label: "Emails Sent",
+      value: stats ? String(stats.totalEmailsSent) : "…",
+      icon: Mail,
+      color: "text-blue-400",
+    },
+    {
+      label: "Success Rate",
+      value: stats ? `${stats.successRate}%` : "…",
+      icon: TrendingUp,
+      color: "text-emerald-400",
+    },
+    {
+      label: "Last Campaign",
+      value: stats?.lastCampaignTime
+        ? stats.lastCampaignTime.toLocaleDateString()
+        : "Never",
+      icon: Activity,
+      color: "text-muted-foreground",
+    },
+  ];
+
+  return (
+    <div className="space-y-6">
+      {/* Summary Cards */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        {statCards.map((card) => (
+          <div key={card.label} className="glass-card p-4">
+            <div className="flex items-center gap-2 mb-2">
+              <card.icon className={`h-4 w-4 ${card.color}`} />
+              <span className="text-xs text-muted-foreground">{card.label}</span>
+            </div>
+            <p className="text-xl font-bold text-foreground">{card.value}</p>
+          </div>
+        ))}
+      </div>
+
+      {/* Campaign History Table */}
+      <div className="glass-card overflow-hidden">
+        <div className="px-4 py-3 border-b border-border flex items-center gap-2">
+          <Mail className="h-4 w-4 text-blue-400" />
+          <h3 className="text-sm font-semibold text-foreground">Campaign History</h3>
+          {!campaignsLoading && (
+            <span className="ml-auto text-xs text-muted-foreground">
+              {campaigns.length} campaign{campaigns.length !== 1 ? "s" : ""}
+            </span>
+          )}
+        </div>
+        {campaignsLoading ? (
+          <div className="py-10 text-center text-sm text-muted-foreground">Loading…</div>
+        ) : campaigns.length === 0 ? (
+          <div className="py-10 text-center">
+            <Mail className="h-10 w-10 text-muted-foreground/40 mx-auto mb-3" />
+            <p className="text-sm text-muted-foreground">No email campaigns sent yet.</p>
+            <p className="text-xs text-muted-foreground mt-1">
+              Campaigns are logged automatically when a new program is published.
+            </p>
+          </div>
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="border-b border-border">
+                  <th className="text-left py-3 px-4 font-medium text-muted-foreground">Date</th>
+                  <th className="text-left py-3 px-4 font-medium text-muted-foreground">Program</th>
+                  <th className="text-left py-3 px-4 font-medium text-muted-foreground">Type</th>
+                  <th className="text-right py-3 px-4 font-medium text-muted-foreground">Recipients</th>
+                  <th className="text-right py-3 px-4 font-medium text-muted-foreground">Sent</th>
+                  <th className="text-right py-3 px-4 font-medium text-muted-foreground">Failed</th>
+                  <th className="text-right py-3 px-4 font-medium text-muted-foreground">Duration</th>
+                </tr>
+              </thead>
+              <tbody>
+                {campaigns.map((c) => (
+                  <tr key={c.id} className="border-b border-border last:border-0 hover:bg-secondary/50 transition-colors">
+                    <td className="py-3 px-4 text-muted-foreground text-xs">
+                      {c.createdAt.toLocaleDateString()}{" "}
+                      <span className="text-muted-foreground/60">
+                        {c.createdAt.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
+                      </span>
+                    </td>
+                    <td className="py-3 px-4 font-medium text-foreground truncate max-w-[180px]" title={c.programName}>
+                      {c.programName}
+                    </td>
+                    <td className="py-3 px-4">
+                      {c.templateType === "premium" ? (
+                        <span className="inline-flex items-center gap-1 rounded-full bg-amber-500/15 px-2 py-0.5 text-xs font-medium text-amber-500">
+                          <Star className="h-2.5 w-2.5" />
+                          Premium
+                        </span>
+                      ) : (
+                        <span className="inline-flex rounded-full bg-blue-500/15 px-2 py-0.5 text-xs font-medium text-blue-400">
+                          Normal
+                        </span>
+                      )}
+                    </td>
+                    <td className="py-3 px-4 text-right text-muted-foreground">{c.totalRecipients}</td>
+                    <td className="py-3 px-4 text-right">
+                      <span className="text-emerald-400 font-medium">{c.totalSent}</span>
+                    </td>
+                    <td className="py-3 px-4 text-right">
+                      {c.totalFailed > 0 ? (
+                        <span className="text-red-400 font-medium">{c.totalFailed}</span>
+                      ) : (
+                        <span className="text-muted-foreground">0</span>
+                      )}
+                    </td>
+                    <td className="py-3 px-4 text-right text-muted-foreground text-xs">
+                      {c.elapsedSeconds > 0 ? `${c.elapsedSeconds.toFixed(1)}s` : "–"}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
 
 export default AdminPanel;
